@@ -1,0 +1,50 @@
+name: Deploy HelpDesk to VM 
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Self-hosted Runner
+    runs-on: self-hosted
+
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Pull Latest Changes
+        run: |
+          cd /var/www/eksamenHelpDesk
+          git pull --no-edit origin main
+
+      - name: Verify Pull
+        run: |
+          cd /var/www/eksamenHelpDesk 
+          git log -1 --oneline 
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+            node-version: "22"
+
+      - name: Install Dependencies
+        working-directory: ./
+        run: cd /var/www/eksamenHelpDesk && npm install
+
+      - name: Reload With PM2
+        run: |
+              echo "Reloading Server"
+              pm2 reload server --update-env
+
+      - name: Verify PM2 Status
+        run: |
+              pm2 status
+              if pm2 list | grap -qE "errored|stopped"; then
+                echo "One or more processes have errored or stopped"
+                exit 1
+              fi
+
+          

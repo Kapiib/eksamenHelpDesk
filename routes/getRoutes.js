@@ -136,7 +136,7 @@ router.get("/api/admin/dashboard", checkAuth, isAdmin, async (req, res) => {
             statusDistribution,
             categoryDistribution,
             criticalTickets,
-            recentActivity: recentActivity.slice(0, 10)
+            recentActivity: recentActivity.slice(0, 5)
         });
     } catch (error) {
         console.error('Error fetching admin dashboard data:', error);
@@ -149,7 +149,7 @@ router.get("/api/admin/recent-activity", checkAuth, isAdmin, async (req, res) =>
         // Get recent activity (simplified version)
         const recentTickets = await Ticket.find()
             .sort({ updatedAt: -1 })
-            .limit(10)
+            .limit(5)
             .populate('createdBy', 'name');
             
         const recentActivity = recentTickets.map(ticket => ({
