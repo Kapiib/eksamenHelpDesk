@@ -1,0 +1,115 @@
+<html lang="en">
+    <%- include ('partials/head') %>
+    <!-- Add user meta data for Socket.IO -->
+    <meta name="user-name" content="<%= user.name %>">
+    <meta name="user-role" content="<%= user.role %>">
+    <script src="/js/ticket-details.js"></script>
+<body>
+    <%- include ('partials/navbar') %>
+    
+    <div class="container">
+        <div class="ticket-details-header">
+            <h1>Ticket #<%= ticket._id.toString().substr(-6) %></h1>
+            <a href="/tickets" class="back-link">← Back to Tickets</a>
+        </div>
+        
+        <div class="ticket-details-card">
+            <div class="ticket-details-main">
+                <h2><%= ticket.title %></h2>
+                
+                <div class="ticket-meta">
+                    <span class="ticket-category"><%= ticket.category %></span>
+                    <span class="ticket-priority priority-<%= ticket.priority.toLowerCase() %>"><%= ticket.priority %></span>
+                    <span class="ticket-status status-<%= ticket.status.toLowerCase().replace(' ', '-') %>"><%= ticket.status %></span>
+                </div>
+                
+                <div class="ticket-info">
+                    <p><strong>Created by:</strong> <%= ticket.createdBy.name %> (<%= ticket.createdBy.email %>)</p>
+                    <p><strong>Created on:</strong> <%= new Date(ticket.createdAt).toLocaleString() %></p>
+                    <p><strong>Last updated:</strong> <%= new Date(ticket.updatedAt).toLocaleString() %></p>
+                    <p><strong>Assigned to:</strong> <%= ticket.assignedTo ? ticket.assignedTo.name : 'Unassigned' %></p>
+                </div>
+                
+                <div class="ticket-description">
+                    <h3>Description</h3>
+                    <p><%= ticket.description %></p>
+                </div>
+                
+                <% if (user.role === 'admin') { %>
+                    <div class="admin-controls">
+                        <h3>Admin Controls</h3>
+                        <form action="/tickets/<%= ticket._id %>/update" method="POST" id="ticket-update-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="status">Status:</label>
+                                    <select id="status" name="status">
+                                        <option value="Open" <%= ticket.status === 'Open' ? 'selected' : '' %>>Open</option>
+                                        <option value="In Progress" <%= ticket.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
+                                        <option value="Resolved" <%= ticket.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="priority">Priority:</label>
+                                    <select id="priority" name="priority">
+                                        <option value="Low" <%= ticket.priority === 'Low' ? 'selected' : '' %>>Low</option>
+                                        <option value="Medium" <%= ticket.priority === 'Medium' ? 'selected' : '' %>>Medium</option>
+                                        <option value="High" <%= ticket.priority === 'High' ? 'selected' : '' %>>High</option>
+                                        <option value="Critical" <%= ticket.priority === 'Critical' ? 'selected' : '' %>>Critical</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="assignedTo">Assign to:</label>
+                                    <select id="assignedTo" name="assignedTo">
+                                        <option value="">-- Unassigned --</option>
+                                        <% users.forEach(user => { %>
+                                            <option value="<%= user._id %>" <%= ticket.assignedTo && ticket.assignedTo._id.toString() === user._id.toString() ? 'selected' : '' %>><%= user.name %> (<%= user.role %>)</option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="update-ticket-btn">Update Ticket</button>
+                        </form>
+                    </div>
+                <% } %>
+            </div>
+            
+            <!-- Responses Section -->
+            <div class="ticket-responses">
+                <h3>Responses (<%= ticket.responses.length %>)</h3>
+                
+                <% if (ticket.responses.length > 0) { %>
+                    <div class="responses-list">
+                        <% ticket.responses.forEach(response => { %>
+                            <div class="response-item <%= response.createdBy.role === 'admin' ? 'admin-response' : 'user-response' %>">
+                                <div class="response-header">
+                                    <span class="response-author"><%= response.createdBy.name %> <%= response.createdBy.role === 'admin' ? '(Staff)' : '' %></span>
+                                    <span class="response-date"><%= new Date(response.createdAt).toLocaleString() %></span>
+                                </div>
+                                <div class="response-content">
+                                    <%= response.text %>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <p class="no-responses">No responses yet</p>
+                <% } %>
+                
+                <!-- Add Response Form -->
+                <div class="add-response">
+                    <h4>Add Response</h4>
+                    <form action="/tickets/<%= ticket._id %>/respond" method="POST">
+                        <div class="form-group">
+                            <textarea name="text" rows="4" required placeholder="Type your response here..."></textarea>
+                        </div>
+                        <button type="submit">Submit Response</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

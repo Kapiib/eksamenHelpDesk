@@ -1,0 +1,124 @@
+<html lang="en">
+    <%- include ('partials/head') %>
+    <meta name="user-role" content="<%= user.role %>">
+    <script src="/js/admin-dashboard.js"></script>
+<body>
+    <%- include ('partials/navbar') %>
+
+    <div class="container admin-container">
+        <h1>Admin Dashboard</h1>
+        
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-tickets">...</div>
+                <div class="stat-label">Total Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="open-tickets">...</div>
+                <div class="stat-label">Open Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="in-progress-tickets">...</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="resolved-tickets">...</div>
+                <div class="stat-label">Resolved</div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="admin-actions">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <a href="/tickets" class="btn">View All Tickets</a>
+                <a href="/users" class="btn">Manage Users</a>
+                <a href="/tickets/create" class="btn">Create Ticket</a>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h2>Recent Activity</h2>
+            <div class="activity-container" id="activity-feed">
+                <div class="loading-indicator">Loading recent activity...</div>
+            </div>
+        </div>
+        
+        <!-- Critical Tickets -->
+        <div class="critical-tickets">
+            <h2>High Priority Tickets</h2>
+            <div class="tickets-container" id="critical-tickets-list">
+                <div class="loading-indicator">Loading high priority tickets...</div>
+            </div>
+        </div>
+        
+        <!-- Ticket Distribution -->
+        <div class="ticket-distribution">
+            <div class="distribution-card">
+                <h3>Tickets by Status</h3>
+                <div class="chart-container" id="status-chart">
+                    <div class="status-bars">
+                        <div class="status-bar">
+                            <div class="bar-label">Open</div>
+                            <div class="bar-container">
+                                <div class="bar open-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="status-bar">
+                            <div class="bar-label">In Progress</div>
+                            <div class="bar-container">
+                                <div class="bar progress-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="status-bar">
+                            <div class="bar-label">Resolved</div>
+                            <div class="bar-container">
+                                <div class="bar resolved-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="distribution-card">
+                <h3>Tickets by Category</h3>
+                <div class="chart-container" id="category-chart">
+                    <div class="category-bars">
+                        <div class="category-bar">
+                            <div class="bar-label">Hardware</div>
+                            <div class="bar-container">
+                                <div class="bar hardware-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="category-bar">
+                            <div class="bar-label">Software</div>
+                            <div class="bar-container">
+                                <div class="bar software-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="category-bar">
+                            <div class="bar-label">Network</div>
+                            <div class="bar-container">
+                                <div class="bar network-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="category-bar">
+                            <div class="bar-label">Account</div>
+                            <div class="bar-container">
+                                <div class="bar account-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="category-bar">
+                            <div class="bar-label">Other</div>
+                            <div class="bar-container">
+                                <div class="bar other-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

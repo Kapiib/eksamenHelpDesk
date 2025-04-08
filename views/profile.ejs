@@ -1,0 +1,28 @@
+<html lang="en">
+    <%- include ('partials/head') %>
+<body>
+    <%- include ('partials/navbar') %>
+
+    <div class="container">
+        <h1>Welcome, <%= user.name %>!</h1>
+        
+        <div class="profile-info">
+            <p><strong>Email:</strong> <%= user.email %></p>
+            <p><strong>Account Type:</strong> <%= user.role %></p>
+        </div>
+        
+        <div class="profile-actions">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <a href="/tickets" class="btn">View My Tickets</a>
+                <a href="/tickets/create" class="btn">Create New Ticket</a>
+            </div>
+        </div>
+        
+        <div class="recent-tickets">
+            <h2>Recent Activity</h2>
+            <p>View your recent tickets and responses in the <a href="/tickets">Tickets</a> section.</p>
+        </div>
+    </div>
+</body>
+</html>

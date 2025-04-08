@@ -1,0 +1,14 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'HelpDesk System' %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Include Socket.IO client library -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Only include custom socket.js on ticket details page -->
+    <% if (typeof ticket !== 'undefined') { %>
+        <meta name="user-name" content="<%= user.name %>">
+        <meta name="user-role" content="<%= user.role %>">
+        <script src="/js/socket.js"></script>
+    <% } %>
+</head>

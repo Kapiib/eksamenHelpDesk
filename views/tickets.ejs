@@ -1,0 +1,58 @@
+<html lang="en">
+    <%- include ('partials/head') %>
+    <!-- Add user role for Socket.IO -->
+    <meta name="user-role" content="<%= user.role %>">
+<body>
+    <%- include ('partials/navbar') %>
+    
+    <div class="container">
+        <h1>Tickets</h1>
+        
+        <div class="ticket-header">
+            <a href="/tickets/create" class="create-ticket-btn">Create New Ticket</a>
+            
+            <% if (user && user.role === 'admin') { %>
+                <div class="admin-note">Viewing all tickets (Admin)</div>
+            <% } else { %>
+                <div class="user-note">Viewing your tickets</div>
+            <% } %>
+        </div>
+        
+        <% if (typeof tickets !== 'undefined' && tickets && tickets.length > 0) { %>
+            <div class="tickets-list">
+                <% tickets.forEach(ticket => { %>
+                    <div class="ticket-card status-<%= ticket.status.toLowerCase().replace(' ', '-') %>">
+                        <div class="ticket-info">
+                            <h3><a href="/tickets/<%= ticket._id %>"><%= ticket.title %></a></h3>
+                            <div class="ticket-meta">
+                                <span class="ticket-id">#<%= ticket._id.toString().substr(-6) %></span>
+                                <span class="ticket-category"><%= ticket.category %></span>
+                                <span class="ticket-priority priority-<%= ticket.priority.toLowerCase() %>"><%= ticket.priority %></span>
+                                <span class="ticket-status"><%= ticket.status %></span>
+                            </div>
+                            <div class="ticket-details">
+                                <% if (user.role === 'admin') { %>
+                                    <span class="ticket-user">Created by: <%= ticket.createdBy ? ticket.createdBy.name : 'Unknown' %></span>
+                                <% } %>
+                                <span class="ticket-date">Created: <%= new Date(ticket.createdAt).toLocaleString() %></span>
+                                <% if (ticket.assignedTo) { %>
+                                    <span class="ticket-assigned">Assigned to: <%= ticket.assignedTo.name %></span>
+                                <% } else { %>
+                                    <span class="ticket-assigned">Unassigned</span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <div class="no-tickets">
+                <p>No tickets found</p>
+                <a href="/tickets/create" class="create-ticket-btn">Create Your First Ticket</a>
+            </div>
+        <% } %>
+    </div>
+    
+    <script src="/js/socket.js"></script>
+</body>
+</html>
