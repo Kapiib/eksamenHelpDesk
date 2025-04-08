@@ -16,14 +16,14 @@ async function seedDatabase() {
 
     // Create user and admin
     const user = new User({
-      username: 'user123',
-      email: 'user@example.com',
+      username: 'user',
+      email: 'user@a.com',
       role: 'user'
     });
 
     const admin = new User({
-      username: 'admin123',
-      email: 'admin@example.com',
+      username: 'admin',
+      email: 'admin@a.com',
       role: 'admin'
     });
 
