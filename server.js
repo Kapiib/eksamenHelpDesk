@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
 const http = require('http');
-const server = http.createServer(app);  // Create HTTP server
-const { Server } = require('socket.io'); // Import Server from socket.io
-const io = new Server(server);          // Initialize Socket.IO with server
+const server = http.createServer(app);  
+const { Server } = require('socket.io'); 
+const io = new Server(server);          
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
@@ -73,6 +73,6 @@ app.use("/tickets", ticketRoutes);
 
 // Port
 const PORT = process.env.PORT;
-server.listen(PORT, () => {  // Use server.listen instead of app.listen
+server.listen(PORT, () => {  
     console.log(`Running on http://localhost:${PORT}`);
 });

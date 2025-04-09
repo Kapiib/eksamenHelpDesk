@@ -4,7 +4,7 @@
     <%- include ('partials/navbar') %>
     
     <div class="container">
-        <h1>Create New Ticket</h1>
+        <h1>Opprett ny henvendelse</h1>
         
         <div class="form-container">
             <% if (typeof error !== 'undefined') { %>
@@ -15,38 +15,38 @@
             
             <form action="/tickets/create" method="POST">
                 <div class="form-group">
-                    <label for="title">Title:</label>
+                    <label for="title">Tittel:</label>
                     <input type="text" id="title" name="title" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="description">Description:</label>
+                    <label for="description">Beskrivelse:</label>
                     <textarea id="description" name="description" rows="5" required></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="category">Category:</label>
+                    <label for="category">Kategori:</label>
                     <select id="category" name="category" required>
-                        <option value="">-- Select Category --</option>
-                        <option value="Hardware">Hardware</option>
-                        <option value="Software">Software</option>
-                        <option value="Network">Network</option>
-                        <option value="Account">Account</option>
-                        <option value="Other">Other</option>
+                        <option value="">-- Velg kategori --</option>
+                        <option value="Hardware">Maskinvare</option>
+                        <option value="Software">Programvare</option>
+                        <option value="Network">Nettverk</option>
+                        <option value="Account">Konto</option>
+                        <option value="Other">Annet</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="priority">Priority:</label>
+                    <label for="priority">Prioritet:</label>
                     <select id="priority" name="priority">
-                        <option value="Low">Low</option>
+                        <option value="Low">Lav</option>
                         <option value="Medium" selected>Medium</option>
-                        <option value="High">High</option>
-                        <option value="Critical">Critical</option>
+                        <option value="High">Høy</option>
+                        <option value="Critical">Kritisk</option>
                     </select>
                 </div>
                 
-                <button type="submit">Submit Ticket</button>
+                <button type="submit">Send inn</button>
             </form>
         </div>
     </div>

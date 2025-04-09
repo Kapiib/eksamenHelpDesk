@@ -26,6 +26,102 @@
                 <div class="stat-value" id="resolved-tickets">...</div>
                 <div class="stat-label">Resolved</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value" id="closed-tickets">...</div>
+                <div class="stat-label">Closed Tickets</div>
+            </div>
+        </div>
+        
+        <!-- Role Statistics -->
+        <div class="role-statistics">
+            <h2>Support Team Statistics</h2>
+            <div class="role-stats-container">
+                <div class="role-card">
+                    <h3>1st Line Support</h3>
+                    <div class="role-stats">
+                        <div class="role-stat">
+                            <div class="stat-value" id="1st-line-total">...</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="1st-line-open">...</div>
+                            <div class="stat-label">Open</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="1st-line-in-progress">...</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="1st-line-resolved">...</div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="1st-line-closed">...</div>
+                            <div class="stat-label">Closed</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="role-card">
+                    <h3>2nd Line Support</h3>
+                    <div class="role-stats">
+                        <div class="role-stat">
+                            <div class="stat-value" id="2nd-line-total">...</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="2nd-line-open">...</div>
+                            <div class="stat-label">Open</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="2nd-line-in-progress">...</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="2nd-line-resolved">...</div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="2nd-line-closed">...</div>
+                            <div class="stat-label">Closed</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="role-card">
+                    <h3>Unassigned</h3>
+                    <div class="role-stats">
+                        <div class="role-stat">
+                            <div class="stat-value" id="unassigned-total">...</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="unassigned-open">...</div>
+                            <div class="stat-label">Open</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="unassigned-in-progress">...</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="unassigned-resolved">...</div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
+                        <div class="role-stat">
+                            <div class="stat-value" id="unassigned-closed">...</div>
+                            <div class="stat-label">Closed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Staff Performance -->
+            <div class="staff-performance">
+                <h3>Support Staff Performance</h3>
+                <div class="staff-list" id="staff-performance-list">
+                    <div class="loading-indicator">Loading staff data...</div>
+                </div>
+            </div>
         </div>
         
         <!-- Quick Actions -->
@@ -33,7 +129,7 @@
             <h2>Quick Actions</h2>
             <div class="action-buttons">
                 <a href="/tickets" class="btn">View All Tickets</a>
-                <a href="/users" class="btn">Manage Users</a>
+                <a href="/admin/users" class="btn">Manage Users</a>
                 <a href="/tickets/create" class="btn">Create Ticket</a>
             </div>
         </div>
@@ -76,6 +172,12 @@
                             <div class="bar-label">Resolved</div>
                             <div class="bar-container">
                                 <div class="bar resolved-bar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                        <div class="status-bar">
+                            <div class="bar-label">Closed</div>
+                            <div class="bar-container">
+                                <div class="bar closed-bar" style="width: 0%">0%</div>
                             </div>
                         </div>
                     </div>

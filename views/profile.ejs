@@ -4,24 +4,29 @@
     <%- include ('partials/navbar') %>
 
     <div class="container">
-        <h1>Welcome, <%= user.name %>!</h1>
+        <h1>Velkommen, <%= user.name %>!</h1>
         
         <div class="profile-info">
-            <p><strong>Email:</strong> <%= user.email %></p>
-            <p><strong>Account Type:</strong> <%= user.role %></p>
+            <p><strong>E-post:</strong> <%= user.email %></p>
+            <p><strong>Kontotype:</strong> 
+                <% if (user.role === 'user') { %>Bruker<% } %>
+                <% if (user.role === 'admin') { %>Admin<% } %>
+                <% if (user.role === '1st-line') { %>1. linje support<% } %>
+                <% if (user.role === '2nd-line') { %>2. linje support<% } %>
+            </p>
         </div>
         
         <div class="profile-actions">
-            <h2>Quick Actions</h2>
+            <h2>Hurtighandlinger</h2>
             <div class="action-buttons">
-                <a href="/tickets" class="btn">View My Tickets</a>
-                <a href="/tickets/create" class="btn">Create New Ticket</a>
+                <a href="/tickets" class="btn">Se mine henvendelser</a>
+                <a href="/tickets/create" class="btn">Opprett ny henvendelse</a>
             </div>
         </div>
         
         <div class="recent-tickets">
-            <h2>Recent Activity</h2>
-            <p>View your recent tickets and responses in the <a href="/tickets">Tickets</a> section.</p>
+            <h2>Nylig aktivitet</h2>
+            <p>Se dine nylige henvendelser og svar i <a href="/tickets">Henvendelser</a> seksjonen.</p>
         </div>
     </div>
 </body>

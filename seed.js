@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const argon2 = require('argon2');
 const User = require('./models/User'); // Adjust path to your model
 
-const mongoURI = process.env.MONGO_URI || 'mongodb://admin:password1@10.12.52.71:27017/helpDesk?authSource=helpDesk';
+const mongoURI = process.env.MONGO_URI;
 
 async function seedDatabase() {
   try {
@@ -20,7 +20,10 @@ async function seedDatabase() {
       username: 'user',
       email: 'user@a.com',
       password: hashedUserPassword,
-      role: 'user'
+      role: 'user',
+      ticketsAssigned: 0,
+      ticketsClosed: 0,
+      ticketsResolved: 0
     });
 
     const admin = new User({
@@ -28,7 +31,10 @@ async function seedDatabase() {
       username: 'admin',
       email: 'admin@a.com',
       password: hashedAdminPassword,
-      role: 'admin'
+      role: 'admin',
+      ticketsAssigned: 0,
+      ticketsClosed: 0,
+      ticketsResolved: 0
     });
 
     await user.save();

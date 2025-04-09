@@ -30,6 +30,8 @@ function fetchDashboardData() {
         .then(response => response.json())
         .then(data => {
             updateStats(data.stats);
+            updateRoleStats(data.roleStats);
+            updateStaffPerformance(data.supportStaff);
             updateStatusChart(data.statusDistribution);
             updateCategoryChart(data.categoryDistribution);
             updateCriticalTickets(data.criticalTickets);
@@ -52,12 +54,37 @@ function updateStats(stats) {
     document.getElementById('open-tickets').textContent = stats.open;
     document.getElementById('in-progress-tickets').textContent = stats.inProgress;
     document.getElementById('resolved-tickets').textContent = stats.resolved;
+    document.getElementById('closed-tickets').textContent = stats.closed;
+}
+
+function updateRoleStats(roleStats) {
+    // 1st Line
+    document.getElementById('1st-line-total').textContent = roleStats['1st-line'].total;
+    document.getElementById('1st-line-open').textContent = roleStats['1st-line'].open;
+    document.getElementById('1st-line-in-progress').textContent = roleStats['1st-line'].inProgress;
+    document.getElementById('1st-line-resolved').textContent = roleStats['1st-line'].resolved;
+    document.getElementById('1st-line-closed').textContent = roleStats['1st-line'].closed;
+    
+    // 2nd Line
+    document.getElementById('2nd-line-total').textContent = roleStats['2nd-line'].total;
+    document.getElementById('2nd-line-open').textContent = roleStats['2nd-line'].open;
+    document.getElementById('2nd-line-in-progress').textContent = roleStats['2nd-line'].inProgress;
+    document.getElementById('2nd-line-resolved').textContent = roleStats['2nd-line'].resolved;
+    document.getElementById('2nd-line-closed').textContent = roleStats['2nd-line'].closed;
+    
+    // Unassigned
+    document.getElementById('unassigned-total').textContent = roleStats.unassigned.total;
+    document.getElementById('unassigned-open').textContent = roleStats.unassigned.open;
+    document.getElementById('unassigned-in-progress').textContent = roleStats.unassigned.inProgress;
+    document.getElementById('unassigned-resolved').textContent = roleStats.unassigned.resolved;
+    document.getElementById('unassigned-closed').textContent = roleStats.unassigned.closed;
 }
 
 function updateStatusChart(distribution) {
     const openBar = document.querySelector('.open-bar');
     const progressBar = document.querySelector('.progress-bar');
     const resolvedBar = document.querySelector('.resolved-bar');
+    const closedBar = document.querySelector('.closed-bar');
     
     openBar.style.width = distribution.open + '%';
     openBar.textContent = distribution.open + '%';
@@ -67,6 +94,9 @@ function updateStatusChart(distribution) {
     
     resolvedBar.style.width = distribution.resolved + '%';
     resolvedBar.textContent = distribution.resolved + '%';
+    
+    closedBar.style.width = distribution.closed + '%';
+    closedBar.textContent = distribution.closed + '%';
 }
 
 function updateCategoryChart(distribution) {
@@ -139,6 +169,39 @@ function updateRecentActivity(activities) {
                 <div class="activity-content">
                     <div class="activity-text">${activity.text}</div>
                     <div class="activity-time">${activity.time}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function updateStaffPerformance(staff) {
+    const container = document.getElementById('staff-performance-list');
+    
+    if (staff.length === 0) {
+        container.innerHTML = '<div class="empty-list">No support staff found</div>';
+        return;
+    }
+    
+    let html = '';
+    staff.forEach(member => {
+        const resolutionRate = member.ticketsAssigned > 0 
+            ? Math.round((member.ticketsResolved / member.ticketsAssigned) * 100) 
+            : 0;
+            
+        html += `
+            <div class="staff-item role-${member.role.replace('-', '')}">
+                <div class="staff-name">${member.name}</div>
+                <div class="staff-role">${member.role}</div>
+                <div class="staff-metrics">
+                    <span>Assigned: ${member.ticketsAssigned}</span>
+                    <span>Resolved: ${member.ticketsResolved}</span>
+                    <span>Resolution Rate: ${resolutionRate}%</span>
+                </div>
+                <div class="resolution-bar-container">
+                    <div class="resolution-bar" style="width: ${resolutionRate}%"></div>
                 </div>
             </div>
         `;

@@ -1,0 +1,99 @@
+<html lang="en">
+    <%- include ('partials/head') %>
+    <meta name="user-role" content="<%= user.role %>">
+<body>
+    <%- include ('partials/navbar') %>
+
+    <div class="container admin-container">
+        <h1>User Management</h1>
+        
+        <div class="user-search">
+            <input type="text" id="user-search-input" placeholder="Search users...">
+            <select id="role-filter">
+                <option value="">All Roles</option>
+                <option value="user">User</option>
+                <option value="1st-line">1st Line Support</option>
+                <option value="2nd-line">2nd Line Support</option>
+            </select>
+            <!-- Search button removed -->
+        </div>
+        
+        <div class="users-list">
+            <% users.filter(u => u.role !== 'admin').forEach(user => { %>
+                <div class="user-card role-<%= user.role.replace('-', '') %>">
+                    <div class="user-info">
+                        <h3><%= user.name %></h3>
+                        <p><%= user.email %></p>
+                        <span class="user-role"><%= user.role %></span>
+                    </div>
+                    <div class="user-stats">
+                        <div class="stat">
+                            <span class="stat-value"><%= user.ticketsAssigned || 0 %></span>
+                            <span class="stat-label">Assigned</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value"><%= user.ticketsResolved || 0 %></span>
+                            <span class="stat-label">Resolved</span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <form action="/admin/users/<%= user._id %>/update-role" method="POST" class="role-form">
+                            <select name="role" class="role-select">
+                                <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>User</option>
+                                <option value="1st-line" <%= user.role === '1st-line' ? 'selected' : '' %>>1st Line Support</option>
+                                <option value="2nd-line" <%= user.role === '2nd-line' ? 'selected' : '' %>>2nd Line Support</option>
+                            </select>
+                            <!-- Button removed -->
+                        </form>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <script>
+        // Client-side user filtering
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('user-search-input');
+            const roleFilter = document.getElementById('role-filter');
+            const userCards = document.querySelectorAll('.user-card');
+            
+            function filterUsers() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedRole = roleFilter.value;
+                
+                userCards.forEach(card => {
+                    const userName = card.querySelector('h3').textContent.toLowerCase();
+                    const userEmail = card.querySelector('p').textContent.toLowerCase();
+                    const userRole = card.querySelector('.user-role').textContent;
+                    
+                    const matchesSearch = userName.includes(searchTerm) || userEmail.includes(searchTerm);
+                    const matchesRole = selectedRole === '' || userRole === selectedRole;
+                    
+                    if (matchesSearch && matchesRole) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Run filter on input changes
+            searchInput.addEventListener('input', filterUsers);
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    filterUsers();
+                }
+            });
+            roleFilter.addEventListener('change', filterUsers);
+            
+            // Auto-submit role change forms
+            document.querySelectorAll('.role-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    this.closest('form').submit();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

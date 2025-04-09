@@ -6,22 +6,68 @@
     <%- include ('partials/navbar') %>
     
     <div class="container">
-        <h1>Tickets</h1>
+        <h1>Henvendelser</h1>
         
         <div class="ticket-header">
-            <a href="/tickets/create" class="create-ticket-btn">Create New Ticket</a>
+            <a href="/tickets/create" class="create-ticket-btn">Opprett ny henvendelse</a>
             
-            <% if (user && user.role === 'admin') { %>
-                <div class="admin-note">Viewing all tickets (Admin)</div>
+            <% if (user && (user.role === 'admin' || user.role === '1st-line' || user.role === '2nd-line')) { %>
+                <div class="admin-note">Viser alle henvendelser (<%= user.role %>)</div>
             <% } else { %>
-                <div class="user-note">Viewing your tickets</div>
+                <div class="user-note">Viser dine henvendelser</div>
             <% } %>
+        </div>
+        
+        <div class="ticket-filters">
+            <div class="search-container">
+                <input type="text" id="ticket-search" placeholder="Søk henvendelser...">
+                <!-- Search button removed -->
+            </div>
+            
+            <div class="filter-container">
+                <select id="status-filter">
+                    <option value="">Alle statuser</option>
+                    <option value="Open">Åpen</option>
+                    <option value="In Progress">Under arbeid</option>
+                    <option value="Resolved">Løst</option>
+                    <option value="Closed">Ferdig</option>
+                </select>
+                
+                <select id="priority-filter">
+                    <option value="">Alle prioriteter</option>
+                    <option value="Low">Lav</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">Høy</option>
+                    <option value="Critical">Kritisk</option>
+                </select>
+                
+                <select id="category-filter">
+                    <option value="">Alle kategorier</option>
+                    <option value="Hardware">Maskinvare</option>
+                    <option value="Software">Programvare</option>
+                    <option value="Network">Nettverk</option>
+                    <option value="Account">Konto</option>
+                    <option value="Other">Annet</option>
+                </select>
+                
+                <% if (user.role === 'admin') { %>
+                    <select id="role-filter">
+                        <option value="">Alle roller</option>
+                        <option value="unassigned">Ikke tildelt</option>
+                        <option value="1st-line">1. linje</option>
+                        <option value="2nd-line">2. linje</option>
+                    </select>
+                <% } %>
+                
+                <button id="reset-filters">Tilbakestill filtre</button>
+            </div>
         </div>
         
         <% if (typeof tickets !== 'undefined' && tickets && tickets.length > 0) { %>
             <div class="tickets-list">
                 <% tickets.forEach(ticket => { %>
-                    <div class="ticket-card status-<%= ticket.status.toLowerCase().replace(' ', '-') %>">
+                    <div class="ticket-card status-<%= ticket.status.toLowerCase().replace(' ', '-') %>" 
+                         data-role="<%= ticket.assignedRole || 'unassigned' %>">
                         <div class="ticket-info">
                             <h3><a href="/tickets/<%= ticket._id %>"><%= ticket.title %></a></h3>
                             <div class="ticket-meta">
@@ -40,6 +86,9 @@
                                 <% } else { %>
                                     <span class="ticket-assigned">Unassigned</span>
                                 <% } %>
+                                <% if (ticket.assignedRole !== 'unassigned') { %>
+                                    <span class="ticket-role">Role: <%= ticket.assignedRole %></span>
+                                <% } %>
                             </div>
                         </div>
                     </div>
@@ -47,12 +96,81 @@
             </div>
         <% } else { %>
             <div class="no-tickets">
-                <p>No tickets found</p>
-                <a href="/tickets/create" class="create-ticket-btn">Create Your First Ticket</a>
+                <p>Ingen henvendelser funnet</p>
+                <a href="/tickets/create" class="create-ticket-btn">Opprett din første henvendelse</a>
             </div>
         <% } %>
     </div>
     
     <script src="/js/socket.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('ticket-search');
+            const statusFilter = document.getElementById('status-filter');
+            const priorityFilter = document.getElementById('priority-filter');
+            const categoryFilter = document.getElementById('category-filter');
+            const roleFilter = document.getElementById('role-filter');
+            const resetFiltersBtn = document.getElementById('reset-filters');
+            const ticketCards = document.querySelectorAll('.ticket-card');
+            
+            function applyFilters() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const statusValue = statusFilter.value;
+                const priorityValue = priorityFilter.value;
+                const categoryValue = categoryFilter.value;
+                const roleValue = roleFilter ? roleFilter.value : '';
+                
+                ticketCards.forEach(card => {
+                    const title = card.querySelector('h3 a').textContent.toLowerCase();
+                    const status = card.querySelector('.ticket-status').textContent;
+                    const priority = card.querySelector('.ticket-priority').textContent;
+                    const category = card.querySelector('.ticket-category').textContent;
+                    const role = card.getAttribute('data-role') || 'unassigned';
+                    
+                    console.log('Ticket role:', role, 'Filter value:', roleValue); // Debugging
+                    
+                    const matchesSearch = title.includes(searchTerm);
+                    const matchesStatus = statusValue === '' || status === statusValue;
+                    const matchesPriority = priorityValue === '' || priority === priorityValue;
+                    const matchesCategory = categoryValue === '' || category === categoryValue;
+                    const matchesRole = roleValue === '' || role === roleValue;
+                    
+                    if (matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesRole) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+            
+            searchInput.addEventListener('input', applyFilters);
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    applyFilters();
+                }
+            });
+            
+            statusFilter.addEventListener('change', applyFilters);
+            priorityFilter.addEventListener('change', applyFilters);
+            categoryFilter.addEventListener('change', applyFilters);
+            if (roleFilter) {
+                roleFilter.addEventListener('change', applyFilters);
+            }
+            
+            resetFiltersBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                statusFilter.value = '';
+                priorityFilter.value = '';
+                categoryFilter.value = '';
+                if (roleFilter) {
+                    roleFilter.value = '';
+                }
+                
+                ticketCards.forEach(card => {
+                    card.style.display = 'block';
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
             
-            responseListElement.innerHTML += responseItem;
+            responseListElement.innerHTML = responseItem + responseListElement.innerHTML;
             
             // Scroll to the bottom of the responses
             responseListElement.scrollTop = responseListElement.scrollHeight;

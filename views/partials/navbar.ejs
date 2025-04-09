@@ -1,23 +1,30 @@
 <nav>
     <ul>
         <!-- Home always stays first on the left -->
-        <li class="home-link"><a href="/">Home</a></li>
+        <li class="home-link"><a href="/">Hjem</a></li>
 
         <% if (user) { %>
             <!-- User links go to the right in logical order -->
-            <li><a href="/profile">Profile</a></li>
-            <li><a href="/tickets">Tickets</a></li>
+            <li><a href="/profile">Profil</a></li>
+            <li><a href="/tickets">Henvendelser</a></li>
+            <li><a href="/manual">Brukermanual</a></li>
             
+            <!-- Change this section to show admin dashboard to support staff -->
+            <% if (user.role === 'admin' || user.role === '1st-line' || user.role === '2nd-line') { %>
+                <li><a href="/admin/dashboard">Dashboard</a></li>
+            <% } %>
+
+            <!-- Show Manage Users only to admins -->
             <% if (user.role === 'admin') { %>
-                <li><a href="/admin/dashboard">Admin Dashboard</a></li>
+                <li><a href="/admin/users">Administrer brukere</a></li>
             <% } %>
             
             <!-- Logout goes last -->
-            <li class="logout-link"><a href="/auth/logout">Logout</a></li>
+            <li class="logout-link"><a href="/auth/logout">Logg ut</a></li>
         <% } else { %>
             <!-- Auth links for non-logged in users -->
-            <li><a href="/auth/login">Login</a></li>
-            <li><a href="/auth/register">Register</a></li>
+            <li><a href="/auth/login">Logg inn</a></li>
+            <li><a href="/auth/register">Registrer</a></li>
         <% } %>
     </ul>
 </nav>

@@ -24,7 +24,13 @@
                 </div>
                 
                 <div class="ticket-info">
-                    <p><strong>Created by:</strong> <%= ticket.createdBy.name %> (<%= ticket.createdBy.email %>)</p>
+                    <p><strong>Created by:</strong> 
+                        <% if (ticket.createdBy) { %>
+                            <%= ticket.createdBy.name %> (<%= ticket.createdBy.email %>)
+                        <% } else { %>
+                            Unknown user
+                        <% } %>
+                    </p>
                     <p><strong>Created on:</strong> <%= new Date(ticket.createdAt).toLocaleString() %></p>
                     <p><strong>Last updated:</strong> <%= new Date(ticket.updatedAt).toLocaleString() %></p>
                     <p><strong>Assigned to:</strong> <%= ticket.assignedTo ? ticket.assignedTo.name : 'Unassigned' %></p>
@@ -35,10 +41,12 @@
                     <p><%= ticket.description %></p>
                 </div>
                 
-                <% if (user.role === 'admin') { %>
+                <!-- Change this section to show admin controls to support staff too -->
+                <% if (user.role === 'admin' || user.role === '1st-line' || user.role === '2nd-line') { %>
                     <div class="admin-controls">
-                        <h3>Admin Controls</h3>
+                        <h3>Staff Controls</h3>
                         <form action="/tickets/<%= ticket._id %>/update" method="POST" id="ticket-update-form">
+                            <!-- Existing form fields remain the same -->
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="status">Status:</label>
@@ -46,6 +54,7 @@
                                         <option value="Open" <%= ticket.status === 'Open' ? 'selected' : '' %>>Open</option>
                                         <option value="In Progress" <%= ticket.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
                                         <option value="Resolved" <%= ticket.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
+                                        <option value="Closed" <%= ticket.status === 'Closed' ? 'selected' : '' %>>Closed</option>
                                     </select>
                                 </div>
                                 
@@ -60,11 +69,35 @@
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label for="assignedTo">Assign to:</label>
+                                    <label for="assignedRole">Assign to Role:</label>
+                                    <select id="assignedRole" name="assignedRole">
+                                        <option value="unassigned" <%= ticket.assignedRole === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
+                                        <option value="1st-line" <%= ticket.assignedRole === '1st-line' ? 'selected' : '' %>>1st Line Support</option>
+                                        <option value="2nd-line" <%= ticket.assignedRole === '2nd-line' ? 'selected' : '' %>>2nd Line Support</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="assignedTo">Assign to Staff:</label>
                                     <select id="assignedTo" name="assignedTo">
                                         <option value="">-- Unassigned --</option>
-                                        <% users.forEach(user => { %>
-                                            <option value="<%= user._id %>" <%= ticket.assignedTo && ticket.assignedTo._id.toString() === user._id.toString() ? 'selected' : '' %>><%= user.name %> (<%= user.role %>)</option>
+                                        <% users.forEach(user => { 
+                                            // Only show staff members matching the selected role
+                                            const matchesRole = 
+                                                (ticket.assignedRole === '1st-line' && user.role === '1st-line') || 
+                                                (ticket.assignedRole === '2nd-line' && user.role === '2nd-line') ||
+                                                (ticket.assignedRole === 'unassigned');
+                                            
+                                            if (user.role === '1st-line' || user.role === '2nd-line') { %>
+                                                <option 
+                                                    value="<%= user._id %>" 
+                                                    <%= ticket.assignedTo && ticket.assignedTo._id.toString() === user._id.toString() ? 'selected' : '' %>
+                                                    data-role="<%= user.role %>"
+                                                    <%= !matchesRole ? 'hidden' : '' %>
+                                                >
+                                                    <%= user.name %> (<%= user.role %>)
+                                                </option>
+                                            <% } %>
                                         <% }) %>
                                     </select>
                                 </div>
@@ -76,40 +109,81 @@
                 <% } %>
             </div>
             
-            <!-- Responses Section -->
-            <div class="ticket-responses">
-                <h3>Responses (<%= ticket.responses.length %>)</h3>
-                
-                <% if (ticket.responses.length > 0) { %>
-                    <div class="responses-list">
+            <!-- Chat Interface -->
+            <div class="chat-container">
+                <div class="chat-header">
+                    <div>
+                        <span>Ticket Chat</span>
+                        <span class="ticket-id">#<%= ticket._id.toString().substr(-6) %></span>
+                    </div>
+                    <button class="chat-toggle">−</button>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <% if (ticket.responses.length > 0) { %>
                         <% ticket.responses.forEach(response => { %>
-                            <div class="response-item <%= response.createdBy.role === 'admin' ? 'admin-response' : 'user-response' %>">
-                                <div class="response-header">
-                                    <span class="response-author"><%= response.createdBy.name %> <%= response.createdBy.role === 'admin' ? '(Staff)' : '' %></span>
-                                    <span class="response-date"><%= new Date(response.createdAt).toLocaleString() %></span>
-                                </div>
-                                <div class="response-content">
+                            <div class="chat-message <%= response.createdBy && response.createdBy.role === 'admin' ? 'message-admin' : 'message-user' %>">
+                                <div class="message-content">
                                     <%= response.text %>
+                                    <% if (response.fileUrl) { %>
+                                        <img src="<%= response.fileUrl %>" alt="Attached image" loading="lazy">
+                                    <% } %>
+                                </div>
+                                <div class="message-meta">
+                                    <span class="message-sender">
+                                        <%= response.createdBy ? response.createdBy.name : 'Unknown User' %>
+                                    </span>
+                                    <span class="message-time"><%= new Date(response.createdAt).toLocaleString() %></span>
                                 </div>
                             </div>
                         <% }) %>
+                    <% } else { %>
+                        <div class="no-messages">No messages yet. Start the conversation!</div>
+                    <% } %>
+                </div>
+                <div class="chat-input-container">
+                    <div class="chat-preview" id="image-preview">
+                        <button class="remove-preview">&times;</button>
+                        <img id="preview-image" src="" alt="Image preview">
                     </div>
-                <% } else { %>
-                    <p class="no-responses">No responses yet</p>
-                <% } %>
-                
-                <!-- Add Response Form -->
-                <div class="add-response">
-                    <h4>Add Response</h4>
-                    <form action="/tickets/<%= ticket._id %>/respond" method="POST">
-                        <div class="form-group">
-                            <textarea name="text" rows="4" required placeholder="Type your response here..."></textarea>
-                        </div>
-                        <button type="submit">Submit Response</button>
-                    </form>
+                    <div class="chat-tools">
+                        <button class="chat-tool-btn" id="upload-image-btn">
+                            <i class="fas fa-image"></i>
+                        </button>
+                        <input type="file" id="image-upload" accept="image/*" style="display: none">
+                    </div>
+                    <div class="chat-input-area">
+                        <textarea class="chat-input" id="chat-input" placeholder="Type a message..."></textarea>
+                        <button class="chat-send-btn" id="chat-send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <script src="/js/chat-interface.js"></script>
+    <script>
+        // Filter the assignedTo dropdown based on selected role
+        document.getElementById('assignedRole').addEventListener('change', function() {
+            const selectedRole = this.value;
+            const assignedToSelect = document.getElementById('assignedTo');
+            const options = assignedToSelect.querySelectorAll('option');
+            
+            options.forEach(option => {
+                if (option.value === '') {
+                    // Always show the unassigned option
+                    option.hidden = false;
+                } else {
+                    const optionRole = option.getAttribute('data-role');
+                    option.hidden = selectedRole !== 'unassigned' && optionRole !== selectedRole;
+                }
+            });
+            
+            // Reset selection if it's now hidden
+            if (assignedToSelect.selectedOptions[0].hidden) {
+                assignedToSelect.value = '';
+            }
+        });
+    </script>
 </body>
 </html>

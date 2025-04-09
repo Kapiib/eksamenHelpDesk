@@ -1,5 +1,6 @@
 const Ticket = require('../models/Ticket');
 const User = require('../models/User');
+const path = require('path'); // Added for file handling
 
 const ticketController = {
     // Get create ticket page
@@ -68,8 +69,8 @@ const ticketController = {
         try {
             let tickets = [];
             
-            // If admin, get all tickets
-            if (req.user.role === 'admin') {
+            // If admin or support staff, get all tickets
+            if (req.user.role === 'admin' || req.user.role === '1st-line' || req.user.role === '2nd-line') {
                 tickets = await Ticket.find()
                     .populate('createdBy', 'name email')
                     .populate('assignedTo', 'name')
@@ -80,8 +81,6 @@ const ticketController = {
                     .populate('assignedTo', 'name')
                     .sort({ createdAt: -1 });
             }
-            
-            console.log("Tickets found:", tickets.length); // Add logging
             
             res.render('tickets', {
                 title: 'Tickets',
@@ -118,7 +117,10 @@ const ticketController = {
             }
             
             // Check if user has permission to view this ticket
-            if (req.user.role !== 'admin' && ticket.createdBy._id.toString() !== req.user.userId) {
+            if (req.user.role !== 'admin' && 
+                req.user.role !== '1st-line' && 
+                req.user.role !== '2nd-line' && 
+                (!ticket.createdBy || ticket.createdBy._id.toString() !== req.user.userId)) {
                 return res.status(403).render('error', {
                     title: 'Access Denied',
                     user: req.user,
@@ -148,41 +150,47 @@ const ticketController = {
         }
     },
 
-    // Add response to ticket using Socket.IO
+    // Add response to ticket using Socket.IO and handle file uploads
     addResponse: async (req, res) => {
         try {
             const ticketId = req.params.id;
             const { text } = req.body;
+            let fileUrl = null;
+            let fileType = null;
+            
+            // Handle file upload if present
+            if (req.files && req.files.file) {
+                const file = req.files.file;
+                
+                // Generate unique filename
+                const fileName = `${Date.now()}-${file.name}`;
+                const uploadPath = path.join(__dirname, '../public/uploads/', fileName);
+                
+                // Move file to uploads directory
+                await file.mv(uploadPath);
+                
+                // Set file URL for storage in DB
+                fileUrl = `/uploads/${fileName}`;
+                fileType = file.mimetype;
+            }
             
             const ticket = await Ticket.findById(ticketId);
             
             // Check if ticket exists
             if (!ticket) {
-                if (req.headers['content-type'] === 'application/json') {
-                    return res.status(404).json({ success: false, message: 'Ticket not found' });
-                }
-                return res.status(404).render('error', {
-                    title: 'Not Found',
-                    user: req.user,
-                    message: 'Ticket not found'
-                });
+                return res.status(404).json({ success: false, message: 'Ticket not found' });
             }
             
             // Check if user has permission
             if (req.user.role !== 'admin' && ticket.createdBy.toString() !== req.user.userId) {
-                if (req.headers['content-type'] === 'application/json') {
-                    return res.status(403).json({ success: false, message: 'Permission denied' });
-                }
-                return res.status(403).render('error', {
-                    title: 'Access Denied',
-                    user: req.user,
-                    message: 'You do not have permission to respond to this ticket'
-                });
+                return res.status(403).json({ success: false, message: 'Permission denied' });
             }
             
             // Add response
             const newResponse = {
                 text,
+                fileUrl,
+                fileType,
                 createdBy: req.user.userId
             };
             
@@ -200,28 +208,18 @@ const ticketController = {
                 io.to(`ticket-${ticketId}`).emit('response-received', {
                     ticketId,
                     text,
+                    fileUrl,
+                    fileType,
                     userName: req.user.name,
-                    isAdmin: req.user.role === 'admin',
+                    isAdmin: req.user.role === 'admin' || req.user.role === '1st-line' || req.user.role === '2nd-line',
                     timestamp: Date.now()
                 });
             }
             
-            // Check if this is an AJAX request or regular form submission
-            if (req.headers['content-type'] === 'application/json') {
-                return res.json({ success: true });
-            } else {
-                return res.redirect(`/tickets/${ticketId}`);
-            }
+            return res.json({ success: true });
         } catch (error) {
             console.error('Error adding response:', error);
-            if (req.headers['content-type'] === 'application/json') {
-                return res.status(500).json({ success: false, message: 'Server error' });
-            }
-            return res.status(500).render('error', {
-                title: 'Error',
-                user: req.user,
-                message: 'Error adding response. Please try again.'
-            });
+            return res.status(500).json({ success: false, message: 'Server error' });
         }
     },
 
@@ -229,12 +227,12 @@ const ticketController = {
     updateTicket: async (req, res) => {
         try {
             const ticketId = req.params.id;
-            const { status, priority, assignedTo } = req.body;
+            const { status, priority, assignedTo, assignedRole } = req.body;
             
-            // Only admins can update ticket status/priority/assignment
-            if (req.user.role !== 'admin') {
+            // Allow admin and support staff to update ticket
+            if (req.user.role !== 'admin' && req.user.role !== '1st-line' && req.user.role !== '2nd-line') {
                 if (req.headers['content-type'] === 'application/json' || req.xhr) {
-                    return res.status(403).json({ success: false, message: 'Admin access required' });
+                    return res.status(403).json({ success: false, message: 'Staff access required' });
                 }
                 return res.status(403).render('error', {
                     title: 'Access Denied',
@@ -264,11 +262,27 @@ const ticketController = {
             if (status && status !== ticket.status) {
                 changes.status = { old: ticket.status, new: status };
                 ticket.status = status;
+                
+                // If status changed to resolved, update resolvedAt and update user stats
+                if (status === 'Resolved' && ticket.assignedTo) {
+                    ticket.resolvedAt = Date.now();
+                    
+                    // Update assigned user's stats
+                    await User.findByIdAndUpdate(ticket.assignedTo, {
+                        $inc: { ticketsResolved: 1 }
+                    });
+                }
             }
             
             if (priority && priority !== ticket.priority) {
                 changes.priority = { old: ticket.priority, new: priority };
                 ticket.priority = priority;
+            }
+            
+            // Handle role assignment
+            if (assignedRole && assignedRole !== ticket.assignedRole) {
+                changes.assignedRole = { old: ticket.assignedRole, new: assignedRole };
+                ticket.assignedRole = assignedRole;
             }
             
             let assignedToUser = null;
@@ -282,12 +296,23 @@ const ticketController = {
                         old: oldAssignedTo,
                         new: newAssignedTo
                     };
-                    ticket.assignedTo = newAssignedTo;
                     
-                    // Get assigned user info for real-time notification
-                    if (newAssignedTo) {
-                        assignedToUser = await User.findById(newAssignedTo, 'name');
+                    // If the ticket was previously assigned, decrement that user's count
+                    if (oldAssignedTo) {
+                        await User.findByIdAndUpdate(oldAssignedTo, {
+                            $inc: { ticketsAssigned: -1 }
+                        });
                     }
+                    
+                    // If the ticket is being assigned to someone new, increment their count
+                    if (newAssignedTo) {
+                        await User.findByIdAndUpdate(newAssignedTo, {
+                            $inc: { ticketsAssigned: 1 }
+                        });
+                        assignedToUser = await User.findById(newAssignedTo, 'name role');
+                    }
+                    
+                    ticket.assignedTo = newAssignedTo;
                 }
             }
             

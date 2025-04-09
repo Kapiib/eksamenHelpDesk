@@ -1,0 +1,136 @@
+<html lang="no">
+    <%- include ('partials/head') %>
+<body>
+    <%- include ('partials/navbar') %>
+    
+    <div class="container manual-container">
+        <h1>Brukermanual</h1>
+        
+        <div class="manual-tabs">
+            <button class="tab-button active" data-tab="user">For brukere</button>
+            <button class="tab-button" data-tab="1st-line">For 1. linje</button>
+            <button class="tab-button" data-tab="2nd-line">For 2. linje</button>
+        </div>
+        
+        <div class="manual-content">
+            <!-- User manual section -->
+            <div class="tab-content active" id="user-content">
+                <h2>Bruksanvisning for brukere</h2>
+                
+                <div class="manual-section">
+                    <h3>Registrere en ny henvendelse</h3>
+                    <p>1. Klikk på "Opprett henvendelse" på hovedsiden eller i menyen</p>
+                    <p>2. Fyll inn all nødvendig informasjon:</p>
+                    <ul>
+                        <li><strong>Tittel:</strong> En kort beskrivelse av problemet</li>
+                        <li><strong>Beskrivelse:</strong> Detaljert forklaring av problemet</li>
+                        <li><strong>Kategori:</strong> Velg kategori som best passer problemet</li>
+                        <li><strong>Prioritet:</strong> Velg hvor viktig/haster problemet er</li>
+                    </ul>
+                    <p>3. Klikk på "Send inn" for å opprette henvendelsen</p>
+                </div>
+                
+                <div class="manual-section">
+                    <h3>Følge opp henvendelser</h3>
+                    <p>1. Gå til "Henvendelser" i menyen for å se alle dine henvendelser</p>
+                    <p>2. Klikk på en henvendelse for å se detaljer</p>
+                    <p>3. Bruk chatfunksjonen for å svare på henvendelsen</p>
+                    <p>4. Du kan legge ved bilder i chatten for å vise problemet</p>
+                </div>
+                
+                <div class="manual-section">
+                    <h3>Forstå status på henvendelser</h3>
+                    <ul>
+                        <li><strong>Åpen:</strong> Henvendelsen er registrert men ikke behandlet ennå</li>
+                        <li><strong>Under arbeid:</strong> Support jobber med henvendelsen</li>
+                        <li><strong>Løst:</strong> Problemet er løst av support</li>
+                        <li><strong>Ferdig:</strong> Henvendelsen er avsluttet</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 1st Line Support manual section -->
+            <div class="tab-content" id="1st-line-content">
+                <h2>Bruksanvisning for 1. linje support</h2>
+                
+                <div class="manual-section">
+                    <h3>Behandle henvendelser</h3>
+                    <p>1. Gå til "Dashboard" for å se alle henvendelser</p>
+                    <p>2. Filterér henvendelser etter status, prioritet eller kategori</p>
+                    <p>3. Klikk på en henvendelse for å se detaljer og respondere</p>
+                    <p>4. Bruk "Support-kontroller" for å oppdatere status og tildele henvendelser</p>
+                </div>
+                
+                <div class="manual-section">
+                    <h3>Tildele henvendelser</h3>
+                    <p>1. Åpne henvendelsen</p>
+                    <p>2. Bruk "Tildel til rolle" for å sende henvendelsen til rett supportnivå</p>
+                    <p>3. Velg en spesifikk supporter fra "Tildel til Support"</p>
+                    <p>4. Oppdater status til "Under arbeid" når du begynner å jobbe med en henvendelse</p>
+                </div>
+                
+                <div class="manual-section">
+                    <h3>Når du skal eskalere til 2. linje</h3>
+                    <p>Eskalér til 2. linje når:</p>
+                    <ul>
+                        <li>Problemet krever spesialkunnskap eller tilganger du ikke har</li>
+                        <li>Du har prøvd standard løsninger uten hell</li>
+                        <li>Henvendelsen gjelder et komplekst nettverks- eller systemkonfigurasjonsproblem</li>
+                    </ul>
+                    <p>For å eskalere, endre "Tildel til rolle" til "2. linje"</p>
+                </div>
+            </div>
+            
+            <!-- 2nd Line Support manual section -->
+            <div class="tab-content" id="2nd-line-content">
+                <h2>Bruksanvisning for 2. linje support</h2>
+                
+                <div class="manual-section">
+                    <h3>Håndtere eskalerte henvendelser</h3>
+                    <p>1. Sjekk "Dashboard" for henvendelser tildelt 2. linje</p>
+                    <p>2. Filterér henvendelser etter prioritet for å se kritiske problemer først</p>
+                    <p>3. Gjennomgå kommunikasjonen mellom bruker og 1. linje før du svarer</p>
+                    <p>4. Oppdater status til "Under arbeid" når du begynner å jobbe med henvendelsen</p>
+                </div>
+                
+                <div class="manual-section">
+                    <h3>Løse og avslutte henvendelser</h3>
+                    <p>1. Når problemet er løst, skriv en detaljert forklaring i chatten</p>
+                    <p>2. Oppdater status til "Løst"</p>
+                    <p>3. Når brukeren bekrefter at problemet er løst, oppdater status til "Ferdig"</p>
+                    <p>4. Dokumentér løsningen for fremtidig referanse</p>
+                </div>
+                
+                <div class="manual-section">
+                    <h3>Samarbeid med 1. linje</h3>
+                    <p>1. Når du finner løsninger på gjentakende problemer, del kunnskap med 1. linje</p>
+                    <p>2. Bruk detaljerte forklaringer for å hjelpe 1. linje med å løse lignende problemer i fremtiden</p>
+                    <p>3. Send henvendelsen tilbake til 1. linje ved å endre "Tildel til rolle" hvis problemet ikke krever 2. linje</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-content`).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
