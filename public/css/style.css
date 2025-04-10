@@ -1139,6 +1139,10 @@ html::-webkit-scrollbar {
     border-bottom: 2px solid #eee;
 }
 
+.index-h1 {
+    color: white;
+}
+
 .tab-button {
     background: none;
     border: none;
