@@ -17,11 +17,60 @@ async function seedTickets() {
       process.exit(1);
     }
 
-    // Find specific users by role
-    const adminUser = users.find(u => u.role === 'admin');
-    const regularUser = users.find(u => u.role === 'user');
-    const firstLineUser = users.find(u => u.role === '1st-line');
-    const secondLineUser = users.find(u => u.role === '2nd-line');
+    // Find specific users by role or create placeholders
+    const adminUser = users.find(u => u.role === 'admin') || users[0]; // Use first user as fallback
+    const regularUser = users.find(u => u.role === 'user') || users[0];
+    const firstLineUser = users.find(u => u.role === '1st-line') || adminUser;
+    const secondLineUser = users.find(u => u.role === '2nd-line') || adminUser;
+
+    // Log what we found - useful for debugging
+    console.log('Found users:');
+    console.log('- Admin:', adminUser ? adminUser.name : 'None');
+    console.log('- Regular:', regularUser ? regularUser.name : 'None');
+    console.log('- 1st line:', firstLineUser ? firstLineUser.name : 'None');
+    console.log('- 2nd line:', secondLineUser ? secondLineUser.name : 'None');
+
+    // Check if we have all required users
+    if (!adminUser || !regularUser) {
+      console.error('Missing required user roles. Creating some users with required roles...');
+      
+      // Create temp users
+      if (!users.find(u => u.role === 'user')) {
+        const newRegular = new User({
+          name: 'Regular User',
+          email: 'user@example.com',
+          password: '$argon2id$v=19$m=65536,t=3,p=4$...',  // Use a dummy hash
+          role: 'user'
+        });
+        await newRegular.save();
+        console.log('Created temporary regular user');
+        regularUser = newRegular;
+      }
+      
+      if (!users.find(u => u.role === '1st-line')) {
+        const new1stLine = new User({
+          name: '1st Line Support',
+          email: '1stline@example.com',
+          password: '$argon2id$v=19$m=65536,t=3,p=4$...',  // Use a dummy hash
+          role: '1st-line'
+        });
+        await new1stLine.save();
+        console.log('Created temporary 1st-line user');
+        firstLineUser = new1stLine;
+      }
+      
+      if (!users.find(u => u.role === '2nd-line')) {
+        const new2ndLine = new User({
+          name: '2nd Line Support',
+          email: '2ndline@example.com',
+          password: '$argon2id$v=19$m=65536,t=3,p=4$...',  // Use a dummy hash
+          role: '2nd-line'
+        });
+        await new2ndLine.save();
+        console.log('Created temporary 2nd-line user');
+        secondLineUser = new2ndLine;
+      }
+    }
 
     // Delete existing tickets
     await Ticket.deleteMany({});

@@ -66,15 +66,39 @@ async function seedDatabase() {
       ticketsResolved: 0
     });
 
+    // Create 1st-line support user
+    const firstLineSupport = new User({
+      name: '1st Line Support',
+      email: '1stline@example.com',
+      password: hashedUserPassword,
+      role: '1st-line',
+      ticketsAssigned: 0,
+      ticketsClosed: 0,
+      ticketsResolved: 0
+    });
+
+    // Create 2nd-line support user
+    const secondLineSupport = new User({
+      name: '2nd Line Support',
+      email: '2ndline@example.com',
+      password: hashedUserPassword,
+      role: '2nd-line',
+      ticketsAssigned: 0,
+      ticketsClosed: 0,
+      ticketsResolved: 0
+    });
+
     // Save all users
     await Promise.all([
       admin.save(),
       user1.save(),
       user2.save(),
-      user3.save()
+      user3.save(),
+      firstLineSupport.save(),
+      secondLineSupport.save()
     ]);
     
-    console.log('Database seeded successfully with 1 admin and 3 users');
+    console.log('Database seeded successfully with 1 admin, 3 users, 1 1st-line support, and 1 2nd-line support');
 
     // Disconnect from database
     await mongoose.connection.close();
