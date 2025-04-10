@@ -3,7 +3,7 @@ const Ticket = require('./models/Ticket');
 const User = require('./models/User');
 require('dotenv').config();
 
-const mongoURI = process.env.MONGODB_URI;
+const mongoURI = process.env.MONGO_URI;
 
 async function seedTickets() {
   try {
