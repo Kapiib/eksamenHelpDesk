@@ -30,7 +30,6 @@ const authController = {
                 });
             }
             
-            // argon2 to hash password
             const hashedPassword = await argon2.hash(password);
             
             const newUser = new User({
@@ -63,7 +62,6 @@ const authController = {
                 });
             }
             
-            // Using argon2 instead of bcrypt
             const isMatch = await argon2.verify(user.password, password);
             if (!isMatch) {
                 return res.render('login', {
@@ -86,7 +84,6 @@ const authController = {
                 maxAge: 24 * 60 * 60 * 1000 // 1 day
             });
             
-            // Redirect based on user role
             if (user.role === 'admin' || user.role === '1st-line' || user.role === '2nd-line') {
                 res.redirect('/admin/dashboard');
             } else {

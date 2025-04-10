@@ -1,17 +1,15 @@
 const Ticket = require('../models/Ticket');
 const User = require('../models/User');
-const path = require('path'); // Added for file handling
+const path = require('path');
 
 const ticketController = {
-    // Get create ticket page
     getCreateTicket: (req, res) => {
         res.render('createTicket', { 
-            title: 'Create Ticket', // Changed from 'Opprett ny sak'
+            title: 'Create Ticket',
             user: req.user 
         });
     },
     
-    // Create new ticket
     createTicket: async (req, res) => {
         try {
             const { title, description, category, priority } = req.body;
@@ -26,17 +24,13 @@ const ticketController = {
             
             await newTicket.save();
             
-            // Get user details for the notification
             const user = await User.findById(req.user.userId, 'name');
             
-            // Get Socket.IO instance
             const io = req.app.get('socketio');
             if (io) {
-                // Populate the ticket with creator details
                 const populatedTicket = await Ticket.findById(newTicket._id)
                     .populate('createdBy', 'name email');
                 
-                // Emit to all users viewing the tickets list
                 io.to('tickets-list').emit('ticket-created', {
                     ticket: {
                         _id: populatedTicket._id,
@@ -57,20 +51,17 @@ const ticketController = {
         } catch (error) {
             console.error('Error creating ticket:', error);
             res.status(500).render('createTicket', {
-                title: 'Create Ticket', // Changed from 'Opprett ny sak'
+                title: 'Create Ticket',
                 user: req.user,
                 error: 'Error creating ticket. Please try again.' // Changed from Norwegian
             });
         }
     },
 
-    // Change the getTickets method back to original
-
     getTickets: async (req, res) => {
         try {
             let query = {};
             
-            // Only show user's tickets unless they are admin or support staff
             if (req.user.role !== 'admin' && req.user.role !== '1st-line' && req.user.role !== '2nd-line') {
                 query.createdBy = req.user.userId;
             }
@@ -83,7 +74,7 @@ const ticketController = {
             res.render('tickets', {
                 title: 'Tickets',
                 user: req.user,
-                tickets: tickets || [] // Ensure tickets is always an array
+                tickets: tickets || []
             });
         } catch (error) {
             console.error('Error fetching tickets:', error);
@@ -95,7 +86,6 @@ const ticketController = {
         }
     },
 
-    // Get single ticket
     getTicket: async (req, res) => {
         try {
             const ticketId = req.params.id;
@@ -104,7 +94,6 @@ const ticketController = {
                 .populate('assignedTo', 'name email')
                 .populate('responses.createdBy', 'name role');
             
-            // Check if ticket exists
             if (!ticket) {
                 return res.status(404).render('error', {
                     title: 'Not Found',
@@ -113,7 +102,6 @@ const ticketController = {
                 });
             }
             
-            // Check if user has permission to view this ticket
             if (req.user.role !== 'admin' && 
                 req.user.role !== '1st-line' && 
                 req.user.role !== '2nd-line' && 
@@ -125,7 +113,6 @@ const ticketController = {
                 });
             }
             
-            // If admin, get all users for assignment dropdown
             let users = [];
             if (req.user.role === 'admin') {
                 users = await User.find({}, 'name email role');
@@ -147,7 +134,6 @@ const ticketController = {
         }
     },
 
-    // Add response to ticket using Socket.IO and handle file uploads
     addResponse: async (req, res) => {
         try {
             const ticketId = req.params.id;
@@ -155,35 +141,28 @@ const ticketController = {
             let fileUrl = null;
             let fileType = null;
             
-            // Handle file upload if present
             if (req.files && req.files.file) {
                 const file = req.files.file;
                 
-                // Generate unique filename
                 const fileName = `${Date.now()}-${file.name}`;
                 const uploadPath = path.join(__dirname, '../public/uploads/', fileName);
                 
-                // Move file to uploads directory
                 await file.mv(uploadPath);
                 
-                // Set file URL for storage in DB
                 fileUrl = `/uploads/${fileName}`;
                 fileType = file.mimetype;
             }
             
             const ticket = await Ticket.findById(ticketId);
             
-            // Check if ticket exists
             if (!ticket) {
                 return res.status(404).json({ success: false, message: 'Ticket not found' });
             }
             
-            // Check if user has permission
             if (req.user.role !== 'admin' && ticket.createdBy.toString() !== req.user.userId) {
                 return res.status(403).json({ success: false, message: 'Permission denied' });
             }
             
-            // Add response
             const newResponse = {
                 text,
                 fileUrl,
@@ -193,15 +172,12 @@ const ticketController = {
             
             ticket.responses.push(newResponse);
             
-            // Update ticket
             ticket.updatedAt = Date.now();
             
             await ticket.save();
             
-            // Get the Socket.IO instance
             const io = req.app.get('socketio');
             if (io) {
-                // Emit to ALL clients in the room
                 io.to(`ticket-${ticketId}`).emit('response-received', {
                     ticketId,
                     text,
@@ -220,13 +196,11 @@ const ticketController = {
         }
     },
 
-    // Update ticket (admin only)
     updateTicket: async (req, res) => {
         try {
             const ticketId = req.params.id;
             const { status, priority, assignedRole, assignedTo } = req.body;
             
-            // Get the ticket
             const ticket = await Ticket.findById(ticketId);
             if (!ticket) {
                 return res.status(404).render('error', {
@@ -236,13 +210,10 @@ const ticketController = {
                 });
             }
             
-            // Update fields that any staff can modify
             ticket.status = status;
             ticket.priority = priority;
             
-            // Only admins can assign tickets
             if (req.user.role === 'admin') {
-                // Update assignment fields
                 if (assignedRole) {
                     ticket.assignedRole = assignedRole;
                 }
@@ -250,7 +221,6 @@ const ticketController = {
                 if (assignedTo) {
                     ticket.assignedTo = assignedTo;
                     
-                    // If we're assigning to a specific staff member, update their stats
                     if (assignedTo !== ticket.assignedTo) {
                         try {
                             await User.findByIdAndUpdate(assignedTo, {
@@ -263,12 +233,10 @@ const ticketController = {
                 }
             }
             
-            // Add activity record - Initialize activities array if it doesn't exist
             if (!ticket.activities) {
                 ticket.activities = [];
             }
 
-            // Change back to English activity message
             ticket.activities.push({
                 action: 'update',
                 user: req.user.userId,
@@ -289,20 +257,16 @@ const ticketController = {
         }
     },
 
-    // Simplify assignTicket - no need to update User stats
     assignTicket: async (req, res) => {
         try {
             const ticketId = req.params.id;
             const { assignedTo } = req.body;
             
-            // Just update the ticket
             await Ticket.findByIdAndUpdate(ticketId, {
                 assignedTo,
                 updatedAt: new Date()
             });
-            
-            // No need to update user statistics
-            
+                        
             res.json({ success: true });
         } catch (error) {
             console.error('Error assigning ticket:', error);

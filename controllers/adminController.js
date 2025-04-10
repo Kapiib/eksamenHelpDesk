@@ -2,7 +2,6 @@ const User = require('../models/User');
 const Ticket = require('../models/Ticket');
 
 const adminController = {
-    // Get users management page
     getUsers: async (req, res) => {
         try {
             const users = await User.find().select('-password');
@@ -22,13 +21,11 @@ const adminController = {
         }
     },
     
-    // Update user role
     updateUserRole: async (req, res) => {
         try {
             const userId = req.params.id;
             const { role } = req.body;
             
-            // Still prevent assigning admin role through this interface
             if (role === 'admin') {
                 return res.status(403).render('error', {
                     title: 'Action Denied',
@@ -37,16 +34,13 @@ const adminController = {
                 });
             }
             
-            // Validate role
             const validRoles = ['user', 'admin', '1st-line', '2nd-line'];
             if (!validRoles.includes(role)) {
                 return res.status(400).json({ success: false, message: 'Invalid role' });
             }
             
-            // Update user role
             await User.findByIdAndUpdate(userId, { role });
             
-            // Redirect back to users page
             res.redirect('/admin/users');
         } catch (error) {
             console.error('Error updating user role:', error);
@@ -58,7 +52,6 @@ const adminController = {
         }
     },
     
-    // Get dashboard with role statistics
     getDashboard: async (req, res) => {
         try {
             res.render('admin-index', { 
