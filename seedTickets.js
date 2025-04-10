@@ -38,7 +38,7 @@ async function seedTickets() {
       if (!users.find(u => u.role === 'user')) {
         const newRegular = new User({
           name: 'Regular User',
-          email: 'user@example.com',
+          email: 'user@a.com',
           password: '$argon2id$v=19$m=65536,t=3,p=4$...',  // Use a dummy hash
           role: 'user'
         });
@@ -50,7 +50,7 @@ async function seedTickets() {
       if (!users.find(u => u.role === '1st-line')) {
         const new1stLine = new User({
           name: '1st Line Support',
-          email: '1stline@example.com',
+          email: '1stline@a.com',
           password: '$argon2id$v=19$m=65536,t=3,p=4$...',  // Use a dummy hash
           role: '1st-line'
         });
@@ -62,7 +62,7 @@ async function seedTickets() {
       if (!users.find(u => u.role === '2nd-line')) {
         const new2ndLine = new User({
           name: '2nd Line Support',
-          email: '2ndline@example.com',
+          email: '2ndline@a.com',
           password: '$argon2id$v=19$m=65536,t=3,p=4$...',  // Use a dummy hash
           role: '2nd-line'
         });
