@@ -3,7 +3,112 @@
 <body>
     <%- include ('partials/navbar') %>
 
-    <h1>Eksamen Help Desk</h1>
-    
+    <div class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Welcome to IT Help Desk</h1>
+                <p class="hero-description">Fast, efficient IT support to keep you working smoothly</p>
+                <div class="hero-buttons">
+                    <% if (!user) { %>
+                        <a href="/auth/login" class="btn btn-primary">Login</a>
+                        <a href="/auth/register" class="btn">Register</a>
+                    <% } else { %>
+                        <a href="/tickets/create" class="btn btn-primary">Create Ticket</a>
+                        <a href="/tickets" class="btn">View Tickets</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="features-section">
+            <h2>How Can We Help You?</h2>
+            
+            <div class="feature-cards">
+                <div class="feature-card">
+                    <div class="feature-icon hardware-icon">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    <h3>Maskinvare</h3>
+                    <p>Computer not working? Printer problems? We'll diagnose and repair your hardware problems quickly.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon software-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3>Programvare</h3>
+                    <p>Having trouble with applications? Our team can help with installations, updates, and troubleshooting.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon network-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <h3>Nettverk</h3>
+                    <p>Connection issues? WiFi problems? We'll get you back online in no time.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon account-icon">
+                        <i class="fas fa-user-lock"></i>
+                    </div>
+                    <h3>Konto</h3>
+                    <p>Password resets, access problems, and account issues are quickly resolved by our team.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-content">
+                <h2>Our Support Process</h2>
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Submit a Ticket</h4>
+                            <p>Describe your issue in detail and submit it through our ticket system.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Ticket Assignment</h4>
+                            <p>Your ticket will be assigned to the appropriate support specialist.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Resolution</h4>
+                            <p>Our team will work on your issue and keep you updated throughout the process.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Feedback</h4>
+                            <p>Let us know how we did so we can continuously improve our service.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2>Ready to Get Help?</h2>
+            <p>Our support team is standing by to assist you with any IT challenges you're facing.</p>
+            <% if (!user) { %>
+                <a href="/auth/login" class="btn btn-primary">Login to Get Started</a>
+            <% } else { %>
+                <a href="/tickets/create" class="btn btn-primary">Create a Support Ticket</a>
+            <% } %>
+            <p class="cta-secondary">Or check our <a href="/faq">Frequently Asked Questions</a> for quick solutions.</p>
+        </div>
+    </div>
 </body>
 </html>

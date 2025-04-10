@@ -1,0 +1,137 @@
+<html lang="en">
+    <%- include ('partials/head') %>
+<body>
+    <%- include ('partials/navbar') %>
+
+    <div class="container faq-container">
+        <div class="faq-header">
+            <h1>Frequently Asked Questions</h1>
+            <p>Find quick answers to common questions about our help desk services.</p>
+        </div>
+        
+        <div class="faq-content">
+            <div class="faq-section">
+                <h2>Ticket Management</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>How do I create a support ticket?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>To create a ticket, log in to your account, click on the "Create Ticket" button in the navigation menu or dashboard. Fill out the ticket form with details about your issue, select the appropriate category, and submit it.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>How long will it take to resolve my ticket?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Resolution time depends on the complexity and priority of your issue. Most standard tickets are addressed within 24-48 hours. Critical issues are handled with higher priority, often within hours. You can check the status of your ticket anytime from your dashboard.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>How do I check the status of my ticket?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Log in to your account and navigate to "Tickets" in the main menu. You'll see a list of all your tickets with their current status. Click on any ticket to view detailed information, including all communications and updates.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-section">
+                <h2>Account Management</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>How do I reset my password?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>If you've forgotten your password, click on the "Forgot Password" link on the login page. Enter your registered email address, and you'll receive instructions to reset your password. If you're still logged in but want to change your password, go to your Account Settings.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>Can I update my contact information?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, you can update your contact information through your Account Settings. After logging in, find the profile or settings option in the top-right user menu. From there, you can update your name, email, phone number, and other contact details.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-section">
+                <h2>Technical Support</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>What information should I provide when reporting a technical issue?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>When reporting technical issues, please include: 
+                            <ul>
+                                <li>A clear description of the problem</li>
+                                <li>When the issue started occurring</li>
+                                <li>Any error messages you receive</li>
+                                <li>Steps you've already taken to resolve the issue</li>
+                                <li>Screenshots of the problem (if applicable)</li>
+                                <li>Your device model and operating system</li>
+                            </ul>
+                            The more information you provide, the faster we can diagnose and fix the problem.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>How do I know if my issue is a hardware or software problem?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>It can be difficult to determine this on your own, which is why we're here to help! Generally, hardware issues involve physical components (like a broken screen or non-functioning keyboard), while software issues involve programs, applications, or the operating system. Don't worry about categorizing it perfectly - just describe the symptoms, and our technicians will properly diagnose the problem.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-section">
+                <h2>Policies & Procedures</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>What are your support hours?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our standard support hours are Monday to Friday, 8:00 AM to 6:00 PM. Critical issues reported outside these hours will be addressed by our on-call team. All other issues will be handled on the next business day.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <h3>What is your ticket priority system?</h3>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Our priority levels are:
+                            <ul>
+                                <li><strong>Critical:</strong> System-wide outage or issue affecting multiple users and blocking critical business functions</li>
+                                <li><strong>High:</strong> Issue affecting a single user but preventing them from performing essential job functions</li>
+                                <li><strong>Medium:</strong> Issue that hinders work but has a workaround available</li>
+                                <li><strong>Low:</strong> Minor issues, general questions, or enhancement requests</li>
+                            </ul>
+                            Each priority level has different response and resolution time targets.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="faq-contact">
+            <h3>Still have questions?</h3>
+            <p>If you couldn't find the answer you're looking for, please create a ticket and our support team will assist you.</p>
+            <a href="/tickets/create" class="btn">Contact Support</a>
+        </div>
+    </div>
+
+    <script src="/js/faq.js"></script>
+
+</body>
+</html>

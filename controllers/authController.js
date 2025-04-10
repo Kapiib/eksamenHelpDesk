@@ -24,9 +24,9 @@ const authController = {
             
             const existingUser = await User.findOne({ email });
             if (existingUser) {
-                return res.status(400).render('register', {
+                return res.render('register', {
                     title: 'Register',
-                    error: 'Email is already registered',
+                    error: 'User already exists'
                 });
             }
             
@@ -57,18 +57,18 @@ const authController = {
             
             const user = await User.findOne({ email });
             if (!user) {
-                return res.status(401).render('login', { 
+                return res.render('login', {
                     title: 'Login',
-                    error: 'Invalid email or password' 
+                    error: 'Invalid email address'
                 });
             }
             
             // Using argon2 instead of bcrypt
             const isMatch = await argon2.verify(user.password, password);
             if (!isMatch) {
-                return res.status(401).render('login', { 
+                return res.render('login', {
                     title: 'Login',
-                    error: 'Invalid email or password' 
+                    error: 'Incorrect password'
                 });
             }
             
@@ -87,7 +87,7 @@ const authController = {
             });
             
             // Redirect based on user role
-            if (user.role === 'admin') {
+            if (user.role === 'admin' || user.role === '1st-line' || user.role === '2nd-line') {
                 res.redirect('/admin/dashboard');
             } else {
                 res.redirect('/profile');

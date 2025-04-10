@@ -6,7 +6,7 @@ const ticketController = {
     // Get create ticket page
     getCreateTicket: (req, res) => {
         res.render('createTicket', { 
-            title: 'Create New Ticket',
+            title: 'Create Ticket', // Changed from 'Opprett ny sak'
             user: req.user 
         });
     },
@@ -53,34 +53,32 @@ const ticketController = {
                 });
             }
             
-            res.redirect('/tickets');
+            return res.redirect('/tickets');
         } catch (error) {
             console.error('Error creating ticket:', error);
             res.status(500).render('createTicket', {
-                title: 'Create New Ticket',
+                title: 'Create Ticket', // Changed from 'Opprett ny sak'
                 user: req.user,
-                error: 'Error creating ticket. Please try again.'
+                error: 'Error creating ticket. Please try again.' // Changed from Norwegian
             });
         }
     },
 
-    // Get all tickets (admin) or user's tickets
+    // Change the getTickets method back to original
+
     getTickets: async (req, res) => {
         try {
-            let tickets = [];
+            let query = {};
             
-            // If admin or support staff, get all tickets
-            if (req.user.role === 'admin' || req.user.role === '1st-line' || req.user.role === '2nd-line') {
-                tickets = await Ticket.find()
-                    .populate('createdBy', 'name email')
-                    .populate('assignedTo', 'name')
-                    .sort({ createdAt: -1 });
-            } else {
-                // For regular users, get only their tickets
-                tickets = await Ticket.find({ createdBy: req.user.userId })
-                    .populate('assignedTo', 'name')
-                    .sort({ createdAt: -1 });
+            // Only show user's tickets unless they are admin or support staff
+            if (req.user.role !== 'admin' && req.user.role !== '1st-line' && req.user.role !== '2nd-line') {
+                query.createdBy = req.user.userId;
             }
+            
+            let tickets = await Ticket.find(query)
+                .populate('createdBy', 'name email')
+                .populate('assignedTo', 'name')
+                .sort({ updatedAt: -1 });
             
             res.render('tickets', {
                 title: 'Tickets',
@@ -89,7 +87,6 @@ const ticketController = {
             });
         } catch (error) {
             console.error('Error fetching tickets:', error);
-            // Render the error page with more details
             res.status(500).render('error', {
                 title: 'Error',
                 user: req.user,
@@ -227,147 +224,89 @@ const ticketController = {
     updateTicket: async (req, res) => {
         try {
             const ticketId = req.params.id;
-            const { status, priority, assignedTo, assignedRole } = req.body;
+            const { status, priority, assignedRole, assignedTo } = req.body;
             
-            // Allow admin and support staff to update ticket
-            if (req.user.role !== 'admin' && req.user.role !== '1st-line' && req.user.role !== '2nd-line') {
-                if (req.headers['content-type'] === 'application/json' || req.xhr) {
-                    return res.status(403).json({ success: false, message: 'Staff access required' });
-                }
-                return res.status(403).render('error', {
-                    title: 'Access Denied',
-                    user: req.user,
-                    message: 'You do not have permission to update this ticket'
-                });
-            }
-            
+            // Get the ticket
             const ticket = await Ticket.findById(ticketId);
-            
-            // Check if ticket exists
             if (!ticket) {
-                if (req.headers['content-type'] === 'application/json' || req.xhr) {
-                    return res.status(404).json({ success: false, message: 'Ticket not found' });
-                }
                 return res.status(404).render('error', {
                     title: 'Not Found',
-                    user: req.user,
-                    message: 'Ticket not found'
+                    message: 'Ticket not found',
+                    user: req.user
                 });
             }
             
-            // Track changes for notification
-            const changes = {};
+            // Update fields that any staff can modify
+            ticket.status = status;
+            ticket.priority = priority;
             
-            // Update ticket fields
-            if (status && status !== ticket.status) {
-                changes.status = { old: ticket.status, new: status };
-                ticket.status = status;
+            // Only admins can assign tickets
+            if (req.user.role === 'admin') {
+                // Update assignment fields
+                if (assignedRole) {
+                    ticket.assignedRole = assignedRole;
+                }
                 
-                // If status changed to resolved, update resolvedAt and update user stats
-                if (status === 'Resolved' && ticket.assignedTo) {
-                    ticket.resolvedAt = Date.now();
+                if (assignedTo) {
+                    ticket.assignedTo = assignedTo;
                     
-                    // Update assigned user's stats
-                    await User.findByIdAndUpdate(ticket.assignedTo, {
-                        $inc: { ticketsResolved: 1 }
-                    });
+                    // If we're assigning to a specific staff member, update their stats
+                    if (assignedTo !== ticket.assignedTo) {
+                        try {
+                            await User.findByIdAndUpdate(assignedTo, {
+                                $inc: { ticketsAssigned: 1 }
+                            });
+                        } catch (err) {
+                            console.error('Error updating staff stats:', err);
+                        }
+                    }
                 }
             }
             
-            if (priority && priority !== ticket.priority) {
-                changes.priority = { old: ticket.priority, new: priority };
-                ticket.priority = priority;
+            // Add activity record - Initialize activities array if it doesn't exist
+            if (!ticket.activities) {
+                ticket.activities = [];
             }
+
+            // Change back to English activity message
+            ticket.activities.push({
+                action: 'update',
+                user: req.user.userId,
+                message: `Ticket updated by ${req.user.name}`, // Changed from Norwegian
+                timestamp: new Date()
+            });
             
-            // Handle role assignment
-            if (assignedRole && assignedRole !== ticket.assignedRole) {
-                changes.assignedRole = { old: ticket.assignedRole, new: assignedRole };
-                ticket.assignedRole = assignedRole;
-            }
-            
-            let assignedToUser = null;
-            if (assignedTo !== undefined) {
-                // If assignedTo is empty string, set to null (unassigned)
-                const newAssignedTo = assignedTo || null;
-                const oldAssignedTo = ticket.assignedTo ? ticket.assignedTo.toString() : null;
-                
-                if (newAssignedTo !== oldAssignedTo) {
-                    changes.assignedTo = { 
-                        old: oldAssignedTo,
-                        new: newAssignedTo
-                    };
-                    
-                    // If the ticket was previously assigned, decrement that user's count
-                    if (oldAssignedTo) {
-                        await User.findByIdAndUpdate(oldAssignedTo, {
-                            $inc: { ticketsAssigned: -1 }
-                        });
-                    }
-                    
-                    // If the ticket is being assigned to someone new, increment their count
-                    if (newAssignedTo) {
-                        await User.findByIdAndUpdate(newAssignedTo, {
-                            $inc: { ticketsAssigned: 1 }
-                        });
-                        assignedToUser = await User.findById(newAssignedTo, 'name role');
-                    }
-                    
-                    ticket.assignedTo = newAssignedTo;
-                }
-            }
-            
-            ticket.updatedAt = Date.now();
             await ticket.save();
             
-            // Get Socket.IO instance and emit update if there are changes
-            if (Object.keys(changes).length > 0) {
-                const io = req.app.get('socketio');
-                if (io) {
-                    // Send to ticket detail viewers
-                    io.to(`ticket-${ticketId}`).emit('ticket-updated', {
-                        ticketId,
-                        status: ticket.status,
-                        statusChanged: changes.status !== undefined,
-                        priority: ticket.priority,
-                        priorityChanged: changes.priority !== undefined,
-                        assignedTo: assignedToUser ? assignedToUser.name : 'Unassigned',
-                        assignedToChanged: changes.assignedTo !== undefined,
-                        updatedAt: ticket.updatedAt,
-                        updatedBy: req.user.name
-                    });
-                    
-                    // Also emit to tickets list viewers
-                    io.to('tickets-list').emit('ticket-list-updated', {
-                        ticketId,
-                        status: ticket.status,
-                        priority: ticket.priority,
-                        assignedTo: assignedToUser ? assignedToUser.name : 'Unassigned',
-                        updatedAt: ticket.updatedAt,
-                        updatedBy: req.user.name
-                    });
-                }
-            }
-            
-            // Check if this is an AJAX request
-            if (
-                req.xhr || 
-                req.headers.accept?.includes('application/json') ||
-                req.headers['x-requested-with'] === 'XMLHttpRequest'
-            ) {
-                return res.json({ success: true });
-            } else {
-                return res.redirect(`/tickets/${ticketId}`);
-            }
+            res.redirect(`/tickets/${ticketId}`);
         } catch (error) {
             console.error('Error updating ticket:', error);
-            if (req.xhr || req.headers.accept?.includes('application/json')) {
-                return res.status(500).json({ success: false, message: 'Server error' });
-            }
-            return res.status(500).render('error', {
+            res.status(500).render('error', {
                 title: 'Error',
-                user: req.user,
-                message: 'Error updating ticket. Please try again.'
+                message: 'Error updating ticket',
+                user: req.user
             });
+        }
+    },
+
+    // Simplify assignTicket - no need to update User stats
+    assignTicket: async (req, res) => {
+        try {
+            const ticketId = req.params.id;
+            const { assignedTo } = req.body;
+            
+            // Just update the ticket
+            await Ticket.findByIdAndUpdate(ticketId, {
+                assignedTo,
+                updatedAt: new Date()
+            });
+            
+            // No need to update user statistics
+            
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Error assigning ticket:', error);
+            res.status(500).json({ success: false, message: 'Error assigning ticket' });
         }
     }
 };

@@ -63,114 +63,42 @@
             </div>
         </div>
         
-        <% if (typeof tickets !== 'undefined' && tickets && tickets.length > 0) { %>
-            <div class="tickets-list">
-                <% tickets.forEach(ticket => { %>
-                    <div class="ticket-card status-<%= ticket.status.toLowerCase().replace(' ', '-') %>" 
-                         data-role="<%= ticket.assignedRole || 'unassigned' %>">
-                        <div class="ticket-info">
-                            <h3><a href="/tickets/<%= ticket._id %>"><%= ticket.title %></a></h3>
-                            <div class="ticket-meta">
-                                <span class="ticket-id">#<%= ticket._id.toString().substr(-6) %></span>
-                                <span class="ticket-category"><%= ticket.category %></span>
-                                <span class="ticket-priority priority-<%= ticket.priority.toLowerCase() %>"><%= ticket.priority %></span>
-                                <span class="ticket-status"><%= ticket.status %></span>
-                            </div>
-                            <div class="ticket-details">
-                                <% if (user.role === 'admin') { %>
-                                    <span class="ticket-user">Created by: <%= ticket.createdBy ? ticket.createdBy.name : 'Unknown' %></span>
-                                <% } %>
-                                <span class="ticket-date">Created: <%= new Date(ticket.createdAt).toLocaleString() %></span>
-                                <% if (ticket.assignedTo) { %>
-                                    <span class="ticket-assigned">Assigned to: <%= ticket.assignedTo.name %></span>
-                                <% } else { %>
-                                    <span class="ticket-assigned">Unassigned</span>
-                                <% } %>
-                                <% if (ticket.assignedRole !== 'unassigned') { %>
-                                    <span class="ticket-role">Role: <%= ticket.assignedRole %></span>
-                                <% } %>
+        <!-- Replace the organized sections with the original flat list -->
+
+        <div class="tickets-container">
+            <% if(tickets.length === 0) { %>
+                <div class="empty-tickets">
+                    <p>No tickets found</p>
+                    <a href="/tickets/create" class="btn">Create New Ticket</a>
+                </div>
+            <% } else { %>
+                <div class="tickets-list">
+                    <% tickets.forEach(ticket => { %>
+                        <div class="ticket-card status-<%= ticket.status.toLowerCase().replace(' ', '-') %> priority-<%= ticket.priority.toLowerCase() %>">
+                            <div class="ticket-info">
+                                <h3><a href="/tickets/<%= ticket._id %>"><%= ticket.title %></a></h3>
+                                <div class="ticket-meta">
+                                    <span class="ticket-id">#<%= ticket._id.toString().substr(-6) %></span>
+                                    <span class="ticket-category"><%= ticket.category %></span>
+                                    <span class="ticket-priority priority-<%= ticket.priority.toLowerCase() %>"><%= ticket.priority %></span>
+                                    <span class="ticket-status status-<%= ticket.status.toLowerCase().replace(' ', '-') %>"><%= ticket.status %></span>
+                                </div>
+                                <div class="ticket-details">
+                                    <% if(user.role === 'admin' || user.role === '1st-line' || user.role === '2nd-line') { %>
+                                        <span class="ticket-user">Created by: <%= ticket.createdBy ? ticket.createdBy.name : 'Unknown' %></span>
+                                    <% } %>
+                                    <span class="ticket-date">Created: <%= new Date(ticket.createdAt).toLocaleString() %></span>
+                                    <span class="ticket-assigned"><%= ticket.assignedTo ? 'Assigned to: ' + ticket.assignedTo.name : 'Unassigned' %></span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <% }) %>
-            </div>
-        <% } else { %>
-            <div class="no-tickets">
-                <p>Ingen henvendelser funnet</p>
-                <a href="/tickets/create" class="create-ticket-btn">Opprett din første henvendelse</a>
-            </div>
-        <% } %>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
     </div>
     
     <script src="/js/socket.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('ticket-search');
-            const statusFilter = document.getElementById('status-filter');
-            const priorityFilter = document.getElementById('priority-filter');
-            const categoryFilter = document.getElementById('category-filter');
-            const roleFilter = document.getElementById('role-filter');
-            const resetFiltersBtn = document.getElementById('reset-filters');
-            const ticketCards = document.querySelectorAll('.ticket-card');
-            
-            function applyFilters() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const statusValue = statusFilter.value;
-                const priorityValue = priorityFilter.value;
-                const categoryValue = categoryFilter.value;
-                const roleValue = roleFilter ? roleFilter.value : '';
-                
-                ticketCards.forEach(card => {
-                    const title = card.querySelector('h3 a').textContent.toLowerCase();
-                    const status = card.querySelector('.ticket-status').textContent;
-                    const priority = card.querySelector('.ticket-priority').textContent;
-                    const category = card.querySelector('.ticket-category').textContent;
-                    const role = card.getAttribute('data-role') || 'unassigned';
-                    
-                    console.log('Ticket role:', role, 'Filter value:', roleValue); // Debugging
-                    
-                    const matchesSearch = title.includes(searchTerm);
-                    const matchesStatus = statusValue === '' || status === statusValue;
-                    const matchesPriority = priorityValue === '' || priority === priorityValue;
-                    const matchesCategory = categoryValue === '' || category === categoryValue;
-                    const matchesRole = roleValue === '' || role === roleValue;
-                    
-                    if (matchesSearch && matchesStatus && matchesPriority && matchesCategory && matchesRole) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            }
-            
-            searchInput.addEventListener('input', applyFilters);
-            searchInput.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    applyFilters();
-                }
-            });
-            
-            statusFilter.addEventListener('change', applyFilters);
-            priorityFilter.addEventListener('change', applyFilters);
-            categoryFilter.addEventListener('change', applyFilters);
-            if (roleFilter) {
-                roleFilter.addEventListener('change', applyFilters);
-            }
-            
-            resetFiltersBtn.addEventListener('click', function() {
-                searchInput.value = '';
-                statusFilter.value = '';
-                priorityFilter.value = '';
-                categoryFilter.value = '';
-                if (roleFilter) {
-                    roleFilter.value = '';
-                }
-                
-                ticketCards.forEach(card => {
-                    card.style.display = 'block';
-                });
-            });
-        });
-    </script>
+    <script src="/js/tickets.js"></script>
 </body>
 </html>

@@ -27,17 +27,73 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function fetchDashboardData() {
     fetch('/api/admin/dashboard')
-        .then(response => response.json())
-        .then(data => {
-            updateStats(data.stats);
-            updateRoleStats(data.roleStats);
-            updateStaffPerformance(data.supportStaff);
-            updateStatusChart(data.statusDistribution);
-            updateCategoryChart(data.categoryDistribution);
-            updateCriticalTickets(data.criticalTickets);
-            updateRecentActivity(data.recentActivity);
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Server responded with status ${response.status}`);
+            }
+            return response.json();
         })
-        .catch(error => console.error('Error fetching dashboard data:', error));
+        .then(data => {
+            console.log('Dashboard data received:', data);
+            
+            // Use try/catch for each update to isolate errors
+            try {
+                if (data.stats) updateStats(data.stats);
+            } catch (e) {
+                console.error('Error updating stats:', e);
+            }
+            
+            try {
+                if (data.roleStats) updateRoleStats(data.roleStats);
+            } catch (e) {
+                console.error('Error updating role stats:', e);
+            }
+            
+            try {
+                if (data.supportStaff) updateStaffPerformance(data.supportStaff);
+            } catch (e) {
+                console.error('Error updating staff performance:', e);
+            }
+            
+            try {
+                if (data.assignedTickets) updateAssignedTickets(data.assignedTickets);
+            } catch (e) {
+                console.error('Error updating assigned tickets:', e);
+            }
+            
+            try {
+                if (data.statusDistribution) updateStatusChart(data.statusDistribution);
+            } catch (e) {
+                console.error('Error updating status chart:', e);
+            }
+            
+            try {
+                if (data.categoryDistribution) updateCategoryChart(data.categoryDistribution);
+            } catch (e) {
+                console.error('Error updating category chart:', e);
+            }
+            
+            try {
+                if (data.criticalTickets) updateCriticalTickets(data.criticalTickets);
+            } catch (e) {
+                console.error('Error updating critical tickets:', e);
+            }
+            
+            try {
+                if (data.recentActivity) updateRecentActivity(data.recentActivity);
+            } catch (e) {
+                console.error('Error updating recent activity:', e);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching dashboard data:', error);
+            
+            // Show error message in all loading indicators
+            document.querySelectorAll('.loading-indicator').forEach(el => {
+                el.textContent = 'Failed to load data. Please try refreshing.';
+                el.classList.add('error');
+            });
+        });
 }
 
 function fetchRecentActivity() {
@@ -122,65 +178,106 @@ function updateCategoryChart(distribution) {
     otherBar.textContent = distribution.other + '%';
 }
 
+// Update the critical tickets section with Norwegian categories
 function updateCriticalTickets(tickets) {
     const container = document.getElementById('critical-tickets-list');
+    if (!container) return;
     
-    if (tickets.length === 0) {
-        container.innerHTML = '<div class="empty-list">No high priority tickets</div>';
+    // Defensive check for undefined/null tickets
+    if (!tickets || !Array.isArray(tickets) || tickets.length === 0) {
+        container.innerHTML = '<div class="empty-list">Ingen høyprioritets-saker</div>';
         return;
     }
     
-    let html = '';
-    tickets.forEach(ticket => {
-        html += `
-            <div class="ticket-item priority-${ticket.priority.toLowerCase()}">
-                <div class="ticket-title">
-                    <a href="/tickets/${ticket._id}">${ticket.title}</a>
+    try {
+        let html = '';
+        tickets.forEach(ticket => {
+            const id = ticket._id || 'unknown';
+            const title = ticket.title || 'Sak uten tittel';
+            
+            // Directly translate status
+            let status = 'Ukjent status';
+            if (ticket.status === 'Open') status = 'Åpen';
+            else if (ticket.status === 'In Progress') status = 'Under behandling';
+            else if (ticket.status === 'Resolved') status = 'Løst';
+            else if (ticket.status === 'Closed') status = 'Avsluttet';
+            
+            // Directly translate category
+            let category = 'Ukategorisert';
+            if (ticket.category === 'Hardware') category = 'Maskinvare';
+            else if (ticket.category === 'Software') category = 'Programvare';
+            else if (ticket.category === 'Network') category = 'Nettverk';
+            else if (ticket.category === 'Account') category = 'Konto';
+            else if (ticket.category === 'Other') category = 'Annet';
+            else category = ticket.category;
+            
+            const createdBy = ticket.createdBy && ticket.createdBy.name ? ticket.createdBy.name : 'Ukjent';
+            
+            html += `
+                <div class="ticket-item priority-critical">
+                    <div class="ticket-title">
+                        <a href="/tickets/${id}">${title}</a>
+                    </div>
+                    <div class="ticket-meta">
+                        <span class="ticket-id">#${typeof id === 'string' ? id.substr(-6) : id}</span>
+                        <span class="ticket-category">${category}</span>
+                        <span class="ticket-status">${status}</span>
+                    </div>
+                    <div class="ticket-info">
+                        <span>Opprettet av: ${createdBy}</span>
+                        <span>${ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : 'Ukjent dato'}</span>
+                    </div>
                 </div>
-                <div class="ticket-meta">
-                    <span class="ticket-id">#${ticket._id.substr(-6)}</span>
-                    <span class="ticket-category">${ticket.category}</span>
-                    <span class="ticket-status">${ticket.status}</span>
-                </div>
-                <div class="ticket-info">
-                    <span>Created by: ${ticket.createdBy.name}</span>
-                    <span>Created: ${new Date(ticket.createdAt).toLocaleString()}</span>
-                </div>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
+            `;
+        });
+        
+        container.innerHTML = html;
+    } catch (err) {
+        console.error('Error rendering critical tickets:', err);
+        container.innerHTML = '<div class="error-message">Feil ved visning av saker</div>';
+    }
 }
 
 function updateRecentActivity(activities) {
     const container = document.getElementById('activity-feed');
+    if (!container) return;
     
-    if (activities.length === 0) {
+    // Defensive check for undefined/null activities
+    if (!activities || !Array.isArray(activities) || activities.length === 0) {
         container.innerHTML = '<div class="empty-list">No recent activity</div>';
         return;
     }
     
-    let html = '';
-    activities.forEach(activity => {
-        html += `
-            <div class="activity-item">
-                <div class="activity-icon ${activity.type}-icon"></div>
-                <div class="activity-content">
-                    <div class="activity-text">${activity.text}</div>
-                    <div class="activity-time">${activity.time}</div>
+    try {
+        let html = '';
+        activities.forEach(activity => {
+            // Default values if properties are undefined
+            const type = activity.type || 'update';
+            const text = activity.text || 'Unknown activity';
+            const time = activity.time || '';
+            
+            html += `
+                <div class="activity-item">
+                    <div class="activity-icon ${type}-icon"></div>
+                    <div class="activity-content">
+                        <div class="activity-text">${text}</div>
+                        <div class="activity-time">${time}</div>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
+            `;
+        });
+        
+        container.innerHTML = html;
+    } catch (err) {
+        console.error('Error rendering activity feed:', err);
+        container.innerHTML = '<div class="error-message">Error displaying activity</div>';
+    }
 }
 
 function updateStaffPerformance(staff) {
     const container = document.getElementById('staff-performance-list');
     
-    if (staff.length === 0) {
+    if (!staff || staff.length === 0) {
         container.innerHTML = '<div class="empty-list">No support staff found</div>';
         return;
     }
@@ -188,7 +285,7 @@ function updateStaffPerformance(staff) {
     let html = '';
     staff.forEach(member => {
         const resolutionRate = member.ticketsAssigned > 0 
-            ? Math.round((member.ticketsResolved / member.ticketsAssigned) * 100) 
+            ? Math.round(((member.ticketsResolved + member.ticketsClosed) / member.ticketsAssigned) * 100) 
             : 0;
             
         html += `
@@ -198,6 +295,7 @@ function updateStaffPerformance(staff) {
                 <div class="staff-metrics">
                     <span>Assigned: ${member.ticketsAssigned}</span>
                     <span>Resolved: ${member.ticketsResolved}</span>
+                    <span>Closed: ${member.ticketsClosed}</span>
                     <span>Resolution Rate: ${resolutionRate}%</span>
                 </div>
                 <div class="resolution-bar-container">
@@ -208,4 +306,64 @@ function updateStaffPerformance(staff) {
     });
     
     container.innerHTML = html;
+}
+
+// Update the assigned tickets section with Norwegian categories
+function updateAssignedTickets(tickets) {
+    const container = document.getElementById('assigned-tickets-list');
+    if (!container) return;
+    
+    // Defensive check for undefined/null tickets
+    if (!tickets || !Array.isArray(tickets) || tickets.length === 0) {
+        container.innerHTML = '<div class="empty-list">Ingen saker tildelt deg</div>';
+        return;
+    }
+    
+    try {
+        let html = '';
+        tickets.forEach(ticket => {
+            const id = ticket._id || 'unknown';
+            const title = ticket.title || 'Sak uten tittel';
+            
+            // Directly translate status
+            let status = 'Ukjent status';
+            if (ticket.status === 'Open') status = 'Åpen';
+            else if (ticket.status === 'In Progress') status = 'Under behandling';
+            else if (ticket.status === 'Resolved') status = 'Løst';
+            else if (ticket.status === 'Closed') status = 'Avsluttet';
+            else status = ticket.status;
+            
+            // Directly translate category
+            let category = 'Ukategorisert';
+            if (ticket.category === 'Hardware') category = 'Maskinvare';
+            else if (ticket.category === 'Software') category = 'Programvare';
+            else if (ticket.category === 'Network') category = 'Nettverk';
+            else if (ticket.category === 'Account') category = 'Konto';
+            else if (ticket.category === 'Other') category = 'Annet';
+            else category = ticket.category;
+            
+            const priority = ticket.priority ? ticket.priority.toLowerCase() : 'medium';
+            
+            html += `
+                <div class="ticket-item priority-${priority}">
+                    <div class="ticket-title">
+                        <a href="/tickets/${id}">${title}</a>
+                    </div>
+                    <div class="ticket-meta">
+                        <span class="ticket-id">#${typeof id === 'string' ? id.substr(-6) : id}</span>
+                        <span class="ticket-category">${category}</span>
+                        <span class="ticket-status">${status}</span>
+                    </div>
+                    <div class="ticket-info">
+                        <span>${ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : 'Ukjent dato'}</span>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    } catch (err) {
+        console.error('Error rendering assigned tickets:', err);
+        container.innerHTML = '<div class="error-message">Feil ved visning av saker</div>';
+    }
 }

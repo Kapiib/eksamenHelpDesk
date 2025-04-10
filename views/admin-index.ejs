@@ -12,170 +12,182 @@
         <div class="dashboard-stats">
             <div class="stat-card">
                 <div class="stat-value" id="total-tickets">...</div>
-                <div class="stat-label">Total Tickets</div>
+                <div class="stat-label">Totalt antall saker</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="open-tickets">...</div>
-                <div class="stat-label">Open Tickets</div>
+                <div class="stat-label">Åpne saker</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="in-progress-tickets">...</div>
-                <div class="stat-label">In Progress</div>
+                <div class="stat-label">Under behandling</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="resolved-tickets">...</div>
-                <div class="stat-label">Resolved</div>
+                <div class="stat-label">Løst</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="closed-tickets">...</div>
-                <div class="stat-label">Closed Tickets</div>
+                <div class="stat-label">Avsluttede saker</div>
             </div>
         </div>
         
         <!-- Role Statistics -->
         <div class="role-statistics">
-            <h2>Support Team Statistics</h2>
+            <h2>Supportteam-statistikk</h2>
             <div class="role-stats-container">
                 <div class="role-card">
-                    <h3>1st Line Support</h3>
+                    <h3>1. linje support</h3>
                     <div class="role-stats">
                         <div class="role-stat">
                             <div class="stat-value" id="1st-line-total">...</div>
-                            <div class="stat-label">Total</div>
+                            <div class="stat-label">Totalt</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="1st-line-open">...</div>
-                            <div class="stat-label">Open</div>
+                            <div class="stat-label">Åpne</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="1st-line-in-progress">...</div>
-                            <div class="stat-label">In Progress</div>
+                            <div class="stat-label">Under behandling</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="1st-line-resolved">...</div>
-                            <div class="stat-label">Resolved</div>
+                            <div class="stat-label">Løst</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="1st-line-closed">...</div>
-                            <div class="stat-label">Closed</div>
+                            <div class="stat-label">Avsluttet</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="role-card">
-                    <h3>2nd Line Support</h3>
+                    <h3>2. linje support</h3>
                     <div class="role-stats">
                         <div class="role-stat">
                             <div class="stat-value" id="2nd-line-total">...</div>
-                            <div class="stat-label">Total</div>
+                            <div class="stat-label">Totalt</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="2nd-line-open">...</div>
-                            <div class="stat-label">Open</div>
+                            <div class="stat-label">Åpne</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="2nd-line-in-progress">...</div>
-                            <div class="stat-label">In Progress</div>
+                            <div class="stat-label">Under behandling</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="2nd-line-resolved">...</div>
-                            <div class="stat-label">Resolved</div>
+                            <div class="stat-label">Løst</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="2nd-line-closed">...</div>
-                            <div class="stat-label">Closed</div>
+                            <div class="stat-label">Avsluttet</div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="role-card">
-                    <h3>Unassigned</h3>
+                    <h3>Ikke tildelt</h3>
                     <div class="role-stats">
                         <div class="role-stat">
                             <div class="stat-value" id="unassigned-total">...</div>
-                            <div class="stat-label">Total</div>
+                            <div class="stat-label">Totalt</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="unassigned-open">...</div>
-                            <div class="stat-label">Open</div>
+                            <div class="stat-label">Åpne</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="unassigned-in-progress">...</div>
-                            <div class="stat-label">In Progress</div>
+                            <div class="stat-label">Under behandling</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="unassigned-resolved">...</div>
-                            <div class="stat-label">Resolved</div>
+                            <div class="stat-label">Løst</div>
                         </div>
                         <div class="role-stat">
                             <div class="stat-value" id="unassigned-closed">...</div>
-                            <div class="stat-label">Closed</div>
+                            <div class="stat-label">Avsluttet</div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Staff Performance -->
-            <div class="staff-performance">
-                <h3>Support Staff Performance</h3>
-                <div class="staff-list" id="staff-performance-list">
-                    <div class="loading-indicator">Loading staff data...</div>
+            <!-- Staff Performance - Only visible to admins -->
+            <% if (user.role === 'admin') { %>
+                <div class="staff-performance">
+                    <h3>Supportteam-ytelse</h3>
+                    <div class="staff-list" id="staff-performance-list">
+                        <div class="loading-indicator">Laster ansattdata...</div>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- Assigned Tickets - Only visible to support staff -->
+        <% if (user.role === '1st-line' || user.role === '2nd-line') { %>
+            <div class="assigned-tickets">
+                <h3>Dine tildelte saker</h3>
+                <div class="tickets-container" id="assigned-tickets-list">
+                    <div class="loading-indicator">Laster dine tildelte saker...</div>
                 </div>
             </div>
-        </div>
+        <% } %>
         
         <!-- Quick Actions -->
         <div class="admin-actions">
-            <h2>Quick Actions</h2>
+            <h2>Hurtigvalg</h2>
             <div class="action-buttons">
-                <a href="/tickets" class="btn">View All Tickets</a>
-                <a href="/admin/users" class="btn">Manage Users</a>
-                <a href="/tickets/create" class="btn">Create Ticket</a>
+                <a href="/tickets" class="btn">Vis alle saker</a>
+                <a href="/admin/users" class="btn">Administrer brukere</a>
+                <a href="/tickets/create" class="btn">Opprett sak</a>
             </div>
         </div>
         
         <!-- Recent Activity -->
         <div class="recent-activity">
-            <h2>Recent Activity</h2>
+            <h2>Nylig aktivitet</h2>
             <div class="activity-container" id="activity-feed">
-                <div class="loading-indicator">Loading recent activity...</div>
+                <div class="loading-indicator">Laster nylig aktivitet...</div>
             </div>
         </div>
         
         <!-- Critical Tickets -->
         <div class="critical-tickets">
-            <h2>High Priority Tickets</h2>
+            <h2>Høyprioritetssaker</h2>
             <div class="tickets-container" id="critical-tickets-list">
-                <div class="loading-indicator">Loading high priority tickets...</div>
+                <div class="loading-indicator">Laster høyprioritetssaker...</div>
             </div>
         </div>
         
         <!-- Ticket Distribution -->
         <div class="ticket-distribution">
             <div class="distribution-card">
-                <h3>Tickets by Status</h3>
+                <h3>Saker etter status</h3>
                 <div class="chart-container" id="status-chart">
                     <div class="status-bars">
                         <div class="status-bar">
-                            <div class="bar-label">Open</div>
+                            <div class="bar-label">Åpen</div>
                             <div class="bar-container">
                                 <div class="bar open-bar" style="width: 0%">0%</div>
                             </div>
                         </div>
                         <div class="status-bar">
-                            <div class="bar-label">In Progress</div>
+                            <div class="bar-label">Under behandling</div>
                             <div class="bar-container">
                                 <div class="bar progress-bar" style="width: 0%">0%</div>
                             </div>
                         </div>
                         <div class="status-bar">
-                            <div class="bar-label">Resolved</div>
+                            <div class="bar-label">Løst</div>
                             <div class="bar-container">
                                 <div class="bar resolved-bar" style="width: 0%">0%</div>
                             </div>
                         </div>
                         <div class="status-bar">
-                            <div class="bar-label">Closed</div>
+                            <div class="bar-label">Avsluttet</div>
                             <div class="bar-container">
                                 <div class="bar closed-bar" style="width: 0%">0%</div>
                             </div>
@@ -184,35 +196,35 @@
                 </div>
             </div>
             <div class="distribution-card">
-                <h3>Tickets by Category</h3>
+                <h3>Saker etter kategori</h3>
                 <div class="chart-container" id="category-chart">
                     <div class="category-bars">
                         <div class="category-bar">
-                            <div class="bar-label">Hardware</div>
+                            <div class="bar-label">Maskinvare</div>
                             <div class="bar-container">
                                 <div class="bar hardware-bar" style="width: 0%">0%</div>
                             </div>
                         </div>
                         <div class="category-bar">
-                            <div class="bar-label">Software</div>
+                            <div class="bar-label">Programvare</div>
                             <div class="bar-container">
                                 <div class="bar software-bar" style="width: 0%">0%</div>
                             </div>
                         </div>
                         <div class="category-bar">
-                            <div class="bar-label">Network</div>
+                            <div class="bar-label">Nettverk</div>
                             <div class="bar-container">
                                 <div class="bar network-bar" style="width: 0%">0%</div>
                             </div>
                         </div>
                         <div class="category-bar">
-                            <div class="bar-label">Account</div>
+                            <div class="bar-label">Konto</div>
                             <div class="bar-container">
                                 <div class="bar account-bar" style="width: 0%">0%</div>
                             </div>
                         </div>
                         <div class="category-bar">
-                            <div class="bar-label">Other</div>
+                            <div class="bar-label">Annet</div>
                             <div class="bar-container">
                                 <div class="bar other-bar" style="width: 0%">0%</div>
                             </div>

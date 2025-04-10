@@ -20,6 +20,14 @@ router.get("/auth/login", (req, res) => {
     res.render('login', { title: 'Login' });
 });
 
+// FAQ page
+router.get("/faq", (req, res) => {
+    res.render("faq", {
+        title: "FAQ",
+        user: req.user
+    });
+});
+
 // private routes
 router.get("/tickets", checkAuth, ticketController.getTickets);
 router.get("/tickets/create", checkAuth, ticketController.getCreateTicket);
@@ -82,18 +90,81 @@ router.get("/api/admin/dashboard", checkAuth, isStaff, async (req, res) => {
             }
         };
         
-        // Get staff performance stats
-        const supportStaff = await User.find({ 
-            role: { $in: ['1st-line', '2nd-line'] } 
-        }).select('name role ticketsAssigned ticketsResolved');
+        // Replace the supportStaff section with this more dynamic approach
+
+        // Get staff performance stats - only for admin
+        let supportStaff = [];
+        if (req.user.role === 'admin') {
+            // First, get all support staff users
+            const staffUsers = await User.find({ 
+                role: { $in: ['1st-line', '2nd-line'] } 
+            }).select('name role _id');
+            
+            // For each staff member, calculate their ticket stats directly from the tickets collection
+            supportStaff = await Promise.all(staffUsers.map(async (staff) => {
+                // Count tickets assigned to this staff member
+                const ticketsAssigned = await Ticket.countDocuments({ 
+                    assignedTo: staff._id 
+                });
+                
+                // Count resolved tickets
+                const ticketsResolved = await Ticket.countDocuments({ 
+                    assignedTo: staff._id,
+                    status: 'Resolved'
+                });
+                
+                // Count closed tickets
+                const ticketsClosed = await Ticket.countDocuments({ 
+                    assignedTo: staff._id,
+                    status: 'Closed'
+                });
+                
+                // Return user with calculated stats
+                return {
+                    _id: staff._id,
+                    name: staff.name,
+                    role: staff.role,
+                    ticketsAssigned,
+                    ticketsResolved,
+                    ticketsClosed
+                };
+            }));
+        }
+
+        // Get assigned tickets - for support staff
+        let assignedTickets = [];
+        if (req.user.role === '1st-line' || req.user.role === '2nd-line') {
+            // Import mongoose and use new keyword with ObjectId constructor
+            const mongoose = require('mongoose');
+            const ObjectId = mongoose.Types.ObjectId;
+            
+            try {
+                console.log('Finding tickets assigned to:', req.user.userId);
+                
+                // Use 'new' with ObjectId constructor
+                assignedTickets = await Ticket.find({ 
+                    assignedTo: new ObjectId(req.user.userId)
+                })
+                .populate('createdBy', 'name')
+                .sort({ priority: -1, updatedAt: -1 })
+                .limit(10);
+                
+                console.log('Found assigned tickets:', assignedTickets.length);
+            } catch (err) {
+                console.error('Error fetching assigned tickets:', err);
+                // Don't throw error, just return empty array
+                assignedTickets = [];
+            }
+        }
         
-        // Get status distribution percentages
-        const statusDistribution = {
-            open: Math.round((openTickets / totalTickets) * 100) || 0,
-            inProgress: Math.round((inProgressTickets / totalTickets) * 100) || 0,
-            resolved: Math.round((resolvedTickets / totalTickets) * 100) || 0,
-            closed: Math.round((closedTickets / totalTickets) * 100) || 0
-        };
+        // Get status distribution
+        const statuses = ['Open', 'In Progress', 'Resolved', 'Closed'];
+        const statusDistribution = {};
+        
+        for (const status of statuses) {
+            const count = await Ticket.countDocuments({ status });
+            statusDistribution[status.toLowerCase().replace(' ', '-')] = Math.round((count / totalTickets) * 100) || 0;
+        }
         
         // Get category distribution
         const categories = ['Hardware', 'Software', 'Network', 'Account', 'Other'];
@@ -104,21 +175,23 @@ router.get("/api/admin/dashboard", checkAuth, isStaff, async (req, res) => {
             categoryDistribution[category.toLowerCase()] = Math.round((count / totalTickets) * 100) || 0;
         }
         
-        // Get high priority tickets
+        // Get critical tickets
         const criticalTickets = await Ticket.find({ 
-            priority: { $in: ['High', 'Critical'] },
-            status: { $ne: 'Resolved' }
+            priority: 'Critical',
+            status: { $in: ['Open', 'In Progress'] }
         })
         .populate('createdBy', 'name')
-        .sort({ priority: -1, createdAt: -1 })
+        .sort({ updatedAt: -1 })
         .limit(5);
         
-        // Get recent activity
+        // REPLACE TicketActivity with direct ticket queries for recent activity
+        // Get recent activity from tickets directly
         const recentTickets = await Ticket.find()
             .sort({ updatedAt: -1 })
             .limit(5)
             .populate('createdBy', 'name');
-            
+        
+        // Get recent responses using aggregation
         const recentResponses = await Ticket.aggregate([
             { $unwind: '$responses' },
             { $sort: { 'responses.createdAt': -1 } },
@@ -143,14 +216,13 @@ router.get("/api/admin/dashboard", checkAuth, isStaff, async (req, res) => {
         ]);
         
         // Format recent activity
-        const recentActivity = [];
+        const recentActivityFormatted = [];
         
         // Add recent tickets
         recentTickets.forEach(ticket => {
-            // Add null check for createdBy
             const creatorName = ticket.createdBy ? ticket.createdBy.name : 'Unknown User';
             
-            recentActivity.push({
+            recentActivityFormatted.push({
                 type: 'created',
                 text: `${creatorName} created ticket "${ticket.title}"`,
                 time: new Date(ticket.createdAt).toLocaleString(),
@@ -160,10 +232,9 @@ router.get("/api/admin/dashboard", checkAuth, isStaff, async (req, res) => {
         
         // Add recent responses
         recentResponses.forEach(item => {
-            // Add null check
             const userName = item.responseUser && item.responseUser[0] ? item.responseUser[0].name : 'Unknown User';
             
-            recentActivity.push({
+            recentActivityFormatted.push({
                 type: 'response',
                 text: `${userName} responded to ticket "${item.title}"`,
                 time: new Date(item.responses.createdAt).toLocaleString(),
@@ -172,7 +243,7 @@ router.get("/api/admin/dashboard", checkAuth, isStaff, async (req, res) => {
         });
         
         // Sort by time
-        recentActivity.sort((a, b) => new Date(b.time) - new Date(a.time));
+        recentActivityFormatted.sort((a, b) => new Date(b.time) - new Date(a.time));
         
         // Return data
         res.json({
@@ -185,10 +256,11 @@ router.get("/api/admin/dashboard", checkAuth, isStaff, async (req, res) => {
             },
             roleStats,
             supportStaff,
+            assignedTickets,
             statusDistribution,
             categoryDistribution,
             criticalTickets,
-            recentActivity: recentActivity.slice(0, 5)
+            recentActivity: recentActivityFormatted.slice(0, 5)
         });
     } catch (error) {
         console.error('Error fetching admin dashboard data:', error);

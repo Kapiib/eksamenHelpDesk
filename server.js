@@ -14,6 +14,8 @@ const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
 const connectDB = require("./db/dbConfig");
 const checkJWT = require('./utils/checkJWT');
+const session = require('express-session');
+
 
 // Connect to database
 connectDB();
@@ -26,6 +28,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
     useTempFiles: true
+}));
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'helpdesk-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 60000 }
 }));
 
 // Import Routes

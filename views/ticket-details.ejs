@@ -10,7 +10,7 @@
     <div class="container">
         <div class="ticket-details-header">
             <h1>Ticket #<%= ticket._id.toString().substr(-6) %></h1>
-            <a href="/tickets" class="back-link">← Back to Tickets</a>
+            <a href="/tickets" class="back-link">← Back to tickets</a>
         </div>
         
         <div class="ticket-details-card">
@@ -41,79 +41,82 @@
                     <p><%= ticket.description %></p>
                 </div>
                 
-                <!-- Change this section to show admin controls to support staff too -->
+                <!-- Staff controls section (already in Norwegian) -->
                 <% if (user.role === 'admin' || user.role === '1st-line' || user.role === '2nd-line') { %>
-                    <div class="admin-controls">
-                        <h3>Staff Controls</h3>
-                        <form action="/tickets/<%= ticket._id %>/update" method="POST" id="ticket-update-form">
-                            <!-- Existing form fields remain the same -->
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="status">Status:</label>
-                                    <select id="status" name="status">
-                                        <option value="Open" <%= ticket.status === 'Open' ? 'selected' : '' %>>Open</option>
-                                        <option value="In Progress" <%= ticket.status === 'In Progress' ? 'selected' : '' %>>In Progress</option>
-                                        <option value="Resolved" <%= ticket.status === 'Resolved' ? 'selected' : '' %>>Resolved</option>
-                                        <option value="Closed" <%= ticket.status === 'Closed' ? 'selected' : '' %>>Closed</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="priority">Priority:</label>
-                                    <select id="priority" name="priority">
-                                        <option value="Low" <%= ticket.priority === 'Low' ? 'selected' : '' %>>Low</option>
-                                        <option value="Medium" <%= ticket.priority === 'Medium' ? 'selected' : '' %>>Medium</option>
-                                        <option value="High" <%= ticket.priority === 'High' ? 'selected' : '' %>>High</option>
-                                        <option value="Critical" <%= ticket.priority === 'Critical' ? 'selected' : '' %>>Critical</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="assignedRole">Assign to Role:</label>
-                                    <select id="assignedRole" name="assignedRole">
-                                        <option value="unassigned" <%= ticket.assignedRole === 'unassigned' ? 'selected' : '' %>>Unassigned</option>
-                                        <option value="1st-line" <%= ticket.assignedRole === '1st-line' ? 'selected' : '' %>>1st Line Support</option>
-                                        <option value="2nd-line" <%= ticket.assignedRole === '2nd-line' ? 'selected' : '' %>>2nd Line Support</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="assignedTo">Assign to Staff:</label>
-                                    <select id="assignedTo" name="assignedTo">
-                                        <option value="">-- Unassigned --</option>
-                                        <% users.forEach(user => { 
-                                            // Only show staff members matching the selected role
-                                            const matchesRole = 
-                                                (ticket.assignedRole === '1st-line' && user.role === '1st-line') || 
-                                                (ticket.assignedRole === '2nd-line' && user.role === '2nd-line') ||
-                                                (ticket.assignedRole === 'unassigned');
-                                            
-                                            if (user.role === '1st-line' || user.role === '2nd-line') { %>
-                                                <option 
-                                                    value="<%= user._id %>" 
-                                                    <%= ticket.assignedTo && ticket.assignedTo._id.toString() === user._id.toString() ? 'selected' : '' %>
-                                                    data-role="<%= user.role %>"
-                                                    <%= !matchesRole ? 'hidden' : '' %>
-                                                >
-                                                    <%= user.name %> (<%= user.role %>)
-                                                </option>
-                                            <% } %>
-                                        <% }) %>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="update-ticket-btn">Update Ticket</button>
-                        </form>
-                    </div>
-                <% } %>
+    <div class="admin-controls">
+        <h3>Ansatt-kontroller</h3>
+        <form action="/tickets/<%= ticket._id %>/update" method="POST" id="ticket-update-form">
+            <!-- Status control - visible to all staff -->
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <select id="status" name="status">
+                    <option value="Open" <%= ticket.status === 'Open' ? 'selected' : '' %>>Åpen</option>
+                    <option value="In Progress" <%= ticket.status === 'In Progress' ? 'selected' : '' %>>Under behandling</option>
+                    <option value="Resolved" <%= ticket.status === 'Resolved' ? 'selected' : '' %>>Løst</option>
+                    <option value="Closed" <%= ticket.status === 'Closed' ? 'selected' : '' %>>Avsluttet</option>
+                </select>
+            </div>
+            
+            <!-- Priority control - visible to all staff -->
+            <div class="form-group">
+                <label for="priority">Prioritet:</label>
+                <select id="priority" name="priority">
+                    <option value="Low" <%= ticket.priority === 'Low' ? 'selected' : '' %>>Lav</option>
+                    <option value="Medium" <%= ticket.priority === 'Medium' ? 'selected' : '' %>>Medium</option>
+                    <option value="High" <%= ticket.priority === 'High' ? 'selected' : '' %>>Høy</option>
+                    <option value="Critical" <%= ticket.priority === 'Critical' ? 'selected' : '' %>>Kritisk</option>
+                </select>
+            </div>
+            
+            <!-- Assignment controls - visible to admin only -->
+            <% if (user.role === 'admin') { %>
+                <div class="form-group">
+                    <label for="assignedRole">Tildel til rolle:</label>
+                    <select id="assignedRole" name="assignedRole">
+                        <option value="unassigned" <%= ticket.assignedRole === 'unassigned' ? 'selected' : '' %>>-- Ikke tildelt --</option>
+                        <option value="1st-line" <%= ticket.assignedRole === '1st-line' ? 'selected' : '' %>>1. linje support</option>
+                        <option value="2nd-line" <%= ticket.assignedRole === '2nd-line' ? 'selected' : '' %>>2. linje support</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="assignedTo">Tildel til ansatt:</label>
+                    <select id="assignedTo" name="assignedTo">
+                        <option value="">-- Ikke tildelt --</option>
+                        <% users.forEach(user => { 
+                            if (user.role === '1st-line' || user.role === '2nd-line') { %>
+                                <option 
+                                    value="<%= user._id %>" 
+                                    <%= ticket.assignedTo && ticket.assignedTo._id.toString() === user._id.toString() ? 'selected' : '' %>
+                                    data-role="<%= user.role %>"
+                                >
+                                    <%= user.name %> (<%= user.role %>)
+                                </option>
+                            <% } %>
+                        <% }) %>
+                    </select>
+                </div>
+            <% } %>
+            
+            <button type="submit" class="update-ticket-btn">Oppdater sak</button>
+        </form>
+        
+        <!-- Delete button - Admin only -->
+        <% if (user.role === 'admin') { %>
+            <form action="/tickets/<%= ticket._id %>/delete" method="POST" class="delete-form"
+                  onsubmit="return confirm('Er du sikker på at du vil slette denne saken? Denne handlingen kan ikke angres.')">
+                <button type="submit" class="delete-ticket-btn">Slett sak</button>
+            </form>
+        <% } %>
+    </div>
+<% } %>
             </div>
             
             <!-- Chat Interface -->
             <div class="chat-container">
                 <div class="chat-header">
                     <div>
-                        <span>Ticket Chat</span>
+                        <span>Ticket chat</span>
                         <span class="ticket-id">#<%= ticket._id.toString().substr(-6) %></span>
                     </div>
                     <button class="chat-toggle">−</button>
@@ -125,25 +128,25 @@
                                 <div class="message-content">
                                     <%= response.text %>
                                     <% if (response.fileUrl) { %>
-                                        <img src="<%= response.fileUrl %>" alt="Attached image" loading="lazy">
+                                        <img src="<%= response.fileUrl %>" alt="Vedlagt bilde" loading="lazy">
                                     <% } %>
                                 </div>
                                 <div class="message-meta">
                                     <span class="message-sender">
-                                        <%= response.createdBy ? response.createdBy.name : 'Unknown User' %>
+                                        <%= response.createdBy ? response.createdBy.name : 'Ukjent bruker' %>
                                     </span>
                                     <span class="message-time"><%= new Date(response.createdAt).toLocaleString() %></span>
                                 </div>
                             </div>
                         <% }) %>
                     <% } else { %>
-                        <div class="no-messages">No messages yet. Start the conversation!</div>
+                        <div class="no-messages">Ingen meldinger ennå. Start samtalen!</div>
                     <% } %>
                 </div>
                 <div class="chat-input-container">
                     <div class="chat-preview" id="image-preview">
                         <button class="remove-preview">&times;</button>
-                        <img id="preview-image" src="" alt="Image preview">
+                        <img id="preview-image" src="" alt="Forhåndsvisning av bilde">
                     </div>
                     <div class="chat-tools">
                         <button class="chat-tool-btn" id="upload-image-btn">
@@ -152,7 +155,7 @@
                         <input type="file" id="image-upload" accept="image/*" style="display: none">
                     </div>
                     <div class="chat-input-area">
-                        <textarea class="chat-input" id="chat-input" placeholder="Type a message..."></textarea>
+                        <textarea class="chat-input" id="chat-input" placeholder="Skriv en melding..."></textarea>
                         <button class="chat-send-btn" id="chat-send-btn">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -162,28 +165,6 @@
         </div>
     </div>
     <script src="/js/chat-interface.js"></script>
-    <script>
-        // Filter the assignedTo dropdown based on selected role
-        document.getElementById('assignedRole').addEventListener('change', function() {
-            const selectedRole = this.value;
-            const assignedToSelect = document.getElementById('assignedTo');
-            const options = assignedToSelect.querySelectorAll('option');
-            
-            options.forEach(option => {
-                if (option.value === '') {
-                    // Always show the unassigned option
-                    option.hidden = false;
-                } else {
-                    const optionRole = option.getAttribute('data-role');
-                    option.hidden = selectedRole !== 'unassigned' && optionRole !== selectedRole;
-                }
-            });
-            
-            // Reset selection if it's now hidden
-            if (assignedToSelect.selectedOptions[0].hidden) {
-                assignedToSelect.value = '';
-            }
-        });
-    </script>
+    <script src="/js/ticket-assignment.js"></script>
 </body>
 </html>

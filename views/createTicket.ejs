@@ -4,7 +4,7 @@
     <%- include ('partials/navbar') %>
     
     <div class="container">
-        <h1>Opprett ny henvendelse</h1>
+        <h1>Create New Ticket</h1>
         
         <div class="form-container">
             <% if (typeof error !== 'undefined') { %>
@@ -13,21 +13,26 @@
                 </div>
             <% } %>
             
-            <form action="/tickets/create" method="POST">
+            <form action="/tickets/create" method="POST" class="ticket-form">
+                <% if (typeof error !== 'undefined') { %>
+                    <div class="error-message">
+                        <%= error %>
+                    </div>
+                <% } %>
                 <div class="form-group">
-                    <label for="title">Tittel:</label>
+                    <label for="title">Title:</label>
                     <input type="text" id="title" name="title" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="description">Beskrivelse:</label>
+                    <label for="description">Description:</label>
                     <textarea id="description" name="description" rows="5" required></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="category">Kategori:</label>
+                    <label for="category">Category:</label>
                     <select id="category" name="category" required>
-                        <option value="">-- Velg kategori --</option>
+                        <option value="">-- Select category --</option>
                         <option value="Hardware">Maskinvare</option>
                         <option value="Software">Programvare</option>
                         <option value="Network">Nettverk</option>
@@ -37,7 +42,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="priority">Prioritet:</label>
+                    <label for="priority">Priority:</label>
                     <select id="priority" name="priority">
                         <option value="Low">Lav</option>
                         <option value="Medium" selected>Medium</option>
@@ -46,7 +51,7 @@
                     </select>
                 </div>
                 
-                <button type="submit">Send inn</button>
+                <button type="submit" class="submit-btn">Create Ticket</button>
             </form>
         </div>
     </div>

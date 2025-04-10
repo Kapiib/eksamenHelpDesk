@@ -14,3 +14,30 @@
         <script src="/js/socket.js"></script>
     <% } %>
 </head>
+
+<!-- Add this right after the header or at the top of your main content area -->
+<div class="notifications-container">
+    <% if(typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
+        <div class="notification notification-success">
+            <%= success_msg %>
+        </div>
+    <% } %>
+    
+    <% if(typeof error_msg !== 'undefined' && error_msg.length > 0) { %>
+        <div class="notification notification-error">
+            <%= error_msg %>
+        </div>
+    <% } %>
+    
+    <% if(typeof warning_msg !== 'undefined' && warning_msg.length > 0) { %>
+        <div class="notification notification-warning">
+            <%= warning_msg %>
+        </div>
+    <% } %>
+    
+    <% if(typeof info_msg !== 'undefined' && info_msg.length > 0) { %>
+        <div class="notification notification-info">
+            <%= info_msg %>
+        </div>
+    <% } %>
+</div>
